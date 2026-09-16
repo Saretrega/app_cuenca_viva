@@ -1,16 +1,43 @@
-# React + Vite
+# Cuenca Viva
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Simulador educativo interactivo sobre el funcionamiento de una cuenca hidrográfica.
+Permite tomar decisiones ambientales en **cuenca alta, media y baja** y observar cómo
+transforman la calidad del agua, la disponibilidad hídrica, la biodiversidad y la
+resiliencia del territorio.
 
-Currently, two official plugins are available:
+> Cuenca Viva es un simulador educativo de escenarios. Sus resultados no constituyen
+> mediciones reales de calidad del agua ni sustituyen estudios, monitoreos o
+> evaluaciones ambientales oficiales.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Stack
 
-## React Compiler
+Vite · React 19 · JavaScript/JSX · Tailwind CSS v4. Sin TypeScript, sin backend.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Comandos
 
-## Expanding the Oxlint configuration
+```bash
+npm install      # dependencias
+npm run dev      # servidor de desarrollo (HMR)
+npm run build    # build de producción en dist/
+npm run preview  # sirve el build
+npm run lint     # oxlint
+npx vitest run   # pruebas
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+## Estructura
+
+```
+src/
+  data/        datos puros generados desde Matriz_Cuenca_Viva.xlsx
+  logic/       motor matemático y narrativa (probado con Vitest)
+  components/  watershed · decisions · results · stress · ui
+  pages/       pantallas (inicio, cómo funciona, ciencia, simulación, resultados…)
+  hooks/       estado central y persistencia en localStorage
+```
+
+## Fuente de datos
+
+`Matriz_Cuenca_Viva.xlsx` es la fuente de verdad (84 combinaciones `CV-001…CV-084`).
+Los archivos de `src/data/` conservan exactamente sus valores; la propagación aguas
+abajo ya está incorporada en los 12 efectos de cada registro. El motor solo los suma
+y clasifica con bandas configurables (`src/data/thresholds.js`).

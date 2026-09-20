@@ -192,6 +192,7 @@ body {
 /* El paisaje anima suavemente los cambios de color/opacidad del río. */
 .rio-animado {
   transition:
+    fill 0.9s ease,
     stroke 0.9s ease,
     stroke-width 0.6s ease,
     opacity 0.6s ease;

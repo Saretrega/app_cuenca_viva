@@ -11,6 +11,10 @@ const RIO_CTRL = [
 ]
 const RIO_HW = [7, 10, 14, 19, 25, 32, 41, 52]
 
+// Laguna de desembocadura (curva, sin punta)
+const LAGUNA = 'M254 640 C274 598, 402 580, 520 582 C640 584, 760 602, 786 640 Z'
+const LAGUNA_ARENA = 'M236 640 C258 590, 398 570, 520 572 C646 574, 774 594, 802 640 Z'
+
 function catmullPoint(p0, p1, p2, p3, t) {
   const t2 = t * t
   const t3 = t2 * t
@@ -23,7 +27,7 @@ function catmullPoint(p0, p1, p2, p3, t) {
   return [x, y]
 }
 
-function muestrearSpline(ctrl, porTramo = 12) {
+function muestrearSpline(ctrl, porTramo = 14) {
   const P = [ctrl[0], ...ctrl, ctrl[ctrl.length - 1]]
   const out = []
   for (let i = 0; i < ctrl.length - 1; i += 1) {
@@ -35,15 +39,22 @@ function muestrearSpline(ctrl, porTramo = 12) {
 
 const aPath = (pts, cerrar = false) => `M${pts.map((p) => `${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(' L ')}${cerrar ? ' Z' : ''}`
 
+/**
+ * Construye el río: un cauce por tramo (para colorear cada uno según su
+ * calidad de agua), el cauce completo (para la máscara) y los bancos.
+ */
 function construirRio(samples, ctrlHw) {
   const n = samples.length
   const nSeg = ctrlHw.length - 1
-  const hwAt = (u) => {
+
+  const anchos = samples.map((_, i) => {
+    const u = n > 1 ? i / (n - 1) : 0
     const f = u * nSeg
-    const i = Math.min(nSeg - 1, Math.floor(f))
-    const s = f - i
-    return ctrlHw[i] * (1 - s) + ctrlHw[i + 1] * s
-  }
+    const k = Math.min(nSeg - 1, Math.floor(f))
+    const s = f - k
+    return ctrlHw[k] * (1 - s) + ctrlHw[k + 1] * s
+  })
+
   const normales = samples.map((_, i) => {
     const a = samples[Math.max(0, i - 1)]
     const b = samples[Math.min(n - 1, i + 1)]
@@ -52,22 +63,47 @@ function construirRio(samples, ctrlHw) {
     const len = Math.hypot(tx, ty) || 1
     return [-ty / len, tx / len]
   })
-  const poligono = (extra, mult = 1) => {
+
+  const poligono = (i0, i1, extra, mult = 1) => {
     const izq = []
     const der = []
-    samples.forEach((p, i) => {
-      const hw = hwAt(n > 1 ? i / (n - 1) : 0) * mult + extra
-      izq.push([p[0] + normales[i][0] * hw, p[1] + normales[i][1] * hw])
-      der.push([p[0] - normales[i][0] * hw, p[1] - normales[i][1] * hw])
-    })
+    for (let i = i0; i <= i1; i += 1) {
+      const hw = anchos[i] * mult + extra
+      izq.push([samples[i][0] + normales[i][0] * hw, samples[i][1] + normales[i][1] * hw])
+      der.push([samples[i][0] - normales[i][0] * hw, samples[i][1] - normales[i][1] * hw])
+    }
     return [...izq, ...der.reverse()]
   }
-  const centro = aPath(samples)
+
+  const indiceY = (y) => {
+    let k = 0
+    while (k < n - 1 && samples[k][1] < y) k += 1
+    return k
+  }
+  const iAlta = indiceY(216)
+  const iMedia = indiceY(426)
+
+  const bancoEn = (y) => {
+    const k = indiceY(y)
+    const p = samples[k]
+    const hw = anchos[k]
+    const nr = normales[k]
+    return { xIzq: p[0] + nr[0] * hw, xDer: p[0] - nr[0] * hw, y: p[1] }
+  }
+
   return {
-    centro,
-    arena: aPath(poligono(9), true),
-    cauce: aPath(poligono(0), true),
-    brillo: aPath(poligono(0, 0.36), true),
+    centro: aPath(samples),
+    arena: aPath(poligono(0, n - 1, 9), true),
+    cauceCompleto: aPath(poligono(0, n - 1, 0), true),
+    tramos: {
+      alta: { cauce: aPath(poligono(0, iAlta, 0), true), brillo: aPath(poligono(0, iAlta, 0, 0.36), true) },
+      media: { cauce: aPath(poligono(Math.max(0, iAlta - 1), iMedia, 0), true), brillo: aPath(poligono(Math.max(0, iAlta - 1), iMedia, 0, 0.36), true) },
+      baja: { cauce: aPath(poligono(Math.max(0, iMedia - 1), n - 1, 0), true), brillo: aPath(poligono(Math.max(0, iMedia - 1), n - 1, 0, 0.36), true) },
+    },
+    banco: { alta: bancoEn(206), media: bancoEn(404), baja: bancoEn(596) },
+    alta: rangoPath(samples, 140, 216),
+    media: rangoPath(samples, 216, 426),
+    baja: rangoPath(samples, 426, 640),
   }
 }
 
@@ -77,37 +113,42 @@ function rangoPath(samples, y0, y1) {
 }
 
 // ---------------------------------------------------------------------------
-// Bosque (posiciones orgánicas, no en fila)
+// Bosque (posiciones orgánicas, fuera del cauce)
 // ---------------------------------------------------------------------------
 
 const PINOS = [
   [36, 198, 0.7], [64, 186, 0.52], [92, 202, 0.86], [118, 180, 0.58], [146, 196, 0.76],
   [172, 174, 0.5], [198, 190, 0.68], [226, 202, 0.9], [252, 182, 0.6], [280, 196, 0.8],
-  [308, 176, 0.54], [336, 190, 0.72], [364, 202, 0.88], [392, 184, 0.62], [418, 198, 0.78],
-  [556, 190, 0.66], [584, 202, 0.9], [612, 180, 0.58], [640, 196, 0.8], [668, 174, 0.5],
-  [696, 190, 0.72], [724, 202, 0.9], [752, 182, 0.62], [780, 196, 0.82], [808, 176, 0.54],
-  [836, 190, 0.74], [864, 202, 0.86], [892, 184, 0.6], [920, 198, 0.8], [948, 178, 0.56], [974, 194, 0.76],
+  [308, 176, 0.54], [336, 190, 0.72], [364, 202, 0.88], [390, 184, 0.62],
+  [560, 190, 0.66], [588, 202, 0.9], [616, 180, 0.58], [644, 196, 0.8], [672, 174, 0.5],
+  [700, 190, 0.72], [728, 202, 0.9], [756, 182, 0.62], [784, 196, 0.82], [812, 176, 0.54],
+  [840, 190, 0.74], [868, 202, 0.86], [896, 184, 0.6], [924, 198, 0.8], [952, 178, 0.56], [978, 194, 0.76],
 ]
 const ARBOLES = [
   [40, 402, 0.8], [74, 388, 0.6], [108, 404, 0.92], [142, 386, 0.68], [178, 400, 0.84],
   [212, 384, 0.6], [248, 402, 0.8], [284, 388, 0.66], [320, 404, 0.9], [356, 386, 0.7],
-  [392, 400, 0.62], [430, 388, 0.76], [600, 400, 0.68], [636, 386, 0.88], [672, 402, 0.6],
-  [708, 388, 0.8], [744, 404, 0.66], [780, 386, 0.84], [816, 400, 0.6], [852, 386, 0.8],
-  [888, 402, 0.64], [924, 388, 0.82], [960, 400, 0.6], [984, 388, 0.72],
+  [392, 400, 0.62], [560, 400, 0.68], [600, 388, 0.76], [780, 386, 0.84], [816, 400, 0.6],
+  [852, 386, 0.8], [888, 402, 0.64], [924, 388, 0.82], [960, 400, 0.6], [984, 388, 0.72],
 ]
+// Cuenca Baja: a los lados de la laguna de desembocadura
 const VEG_BAJA = [
-  [40, 604, 0.55], [78, 610, 0.92], [106, 600, 0.6], [150, 606, 0.78], [196, 612, 0.5],
-  [238, 600, 0.88], [286, 608, 0.62], [330, 598, 0.96], [372, 610, 0.55], [404, 604, 0.72],
-  [610, 606, 0.66], [648, 598, 0.92], [690, 610, 0.54], [736, 602, 0.8], [782, 608, 0.6],
-  [828, 598, 0.86], [876, 610, 0.58], [918, 604, 0.74], [958, 600, 0.62],
+  [40, 606, 0.55], [78, 612, 0.92], [118, 602, 0.62], [158, 610, 0.78], [200, 604, 0.5], [240, 612, 0.7],
+  [812, 606, 0.66], [850, 612, 0.9], [890, 602, 0.58], [928, 610, 0.8], [962, 604, 0.62],
 ]
 
 const TONOS_PINO = ['#1b5e20', '#2e7d32', '#388e3c', '#43a047', '#255e2b', '#2f7d3a']
 const TONOS_ARBOL = ['#3aa049', '#4caf50', '#2e7d32', '#57b85f', '#388e3c', '#43a047']
+const TONOS_PINO_SECO = ['#6b7d2e', '#7d8a34', '#5f7029', '#8a943f', '#77862f']
+const TONOS_ARBOL_SECO = ['#7d8a3a', '#8f9a45', '#6f7d33', '#9aa64e', '#879436']
+
+/** Densidad de vegetación según la métrica de biodiversidad (0.12 – 1). */
+function densidadVegetacion(valorBio) {
+  return Math.max(0.12, Math.min(1, (valorBio + 7) / 15))
+}
 
 function derivarCaracteristicas(decisions, tramo) {
   const f = {
-    arboles: 4, sueloExpuesto: 0, mineria: 'none', vertimiento: 'none',
+    sueloExpuesto: 0, mineria: 'none', vertimiento: 'none',
     captacion: 'normal', cultivos: 'none', riberas: 'normal', gobernanza: false,
   }
   for (const d of Object.values(decisions ?? {})) {
@@ -115,17 +156,10 @@ function derivarCaracteristicas(decisions, tramo) {
     const alt = d.alternativa
     const cat = d.categoria
     if (cat.startsWith('1.')) {
-      if (alt.startsWith('Conservar')) {
-        f.arboles = 8
-        f.riberas = 'protegida'
-      } else if (alt.startsWith('Restaurar')) {
-        f.arboles = 7
-        f.riberas = 'restaurada'
-      } else if (alt.startsWith('Pérdida')) {
-        f.arboles = 3
-        f.sueloExpuesto = 2
-      } else {
-        f.arboles = 1
+      if (alt.startsWith('Conservar')) f.riberas = 'protegida'
+      else if (alt.startsWith('Restaurar')) f.riberas = 'restaurada'
+      else if (alt.startsWith('Pérdida')) f.sueloExpuesto = 2
+      else {
         f.sueloExpuesto = 4
         f.riberas = 'descuidada'
       }
@@ -174,8 +208,6 @@ const POSICIONES = {
   baja: { suelo: 606, sueloExpuesto: [180, 310, 720, 860] },
 }
 
-const recortar = (n, arr) => arr.slice(0, Math.max(4, Math.min(arr.length, Math.round(n * 4.2))))
-
 function Posicionado({ transform, children }) {
   return (
     <g transform={transform}>
@@ -196,7 +228,9 @@ function Pez({ tramo, i }) {
 }
 
 /**
- * Ilustración de la cuenca por capas, estilo vectorial editorial vibrante.
+ * Ilustración de la cuenca por capas, conectada a las métricas de cada tramo:
+ * color del agua ← calidad del agua · densidad y verdor ← biodiversidad ·
+ * peces ← biodiversidad · alertas ← disponibilidad/resiliencia.
  */
 export default function WatershedLandscape({
   decisions,
@@ -213,16 +247,7 @@ export default function WatershedLandscape({
     [decisions],
   )
 
-  const rio = useMemo(() => {
-    const samples = muestrearSpline(RIO_CTRL, 14)
-    const geo = construirRio(samples, RIO_HW)
-    return {
-      ...geo,
-      alta: rangoPath(samples, 140, 216),
-      media: rangoPath(samples, 216, 426),
-      baja: rangoPath(samples, 426, 640),
-    }
-  }, [])
+  const rio = useMemo(() => construirRio(muestrearSpline(RIO_CTRL, 14), RIO_HW), [])
 
   const lluvia = stressId === 'lluvias' || stressId === 'compuesto'
   const sequia = stressId === 'sequia' || stressId === 'compuesto'
@@ -304,10 +329,6 @@ export default function WatershedLandscape({
     }
   }, [revision])
 
-  const nAlta = recortar(caracteristicas.alta.arboles, PINOS)
-  const nMedia = recortar(caracteristicas.media.arboles, ARBOLES)
-  const nBaja = recortar(caracteristicas.baja.arboles, VEG_BAJA)
-
   return (
     <div className={`relative ${className}`}>
       <svg
@@ -348,14 +369,10 @@ export default function WatershedLandscape({
             <stop offset="0%" stopColor="#f5e2b0" />
             <stop offset="100%" stopColor="#e3c88c" />
           </linearGradient>
-          <linearGradient id="aguaRio" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#8ad3f5" />
-            <stop offset="45%" stopColor="#47adea" />
-            <stop offset="100%" stopColor="#2b8ccf" />
-          </linearGradient>
-          <linearGradient id="aguaBaja" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#47adea" />
-            <stop offset="100%" stopColor="#2477b8" />
+          <linearGradient id="aguaProf" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#ffffff" stopOpacity="0.45" />
+            <stop offset="55%" stopColor="#ffffff" stopOpacity="0" />
+            <stop offset="100%" stopColor="#0c4a6e" stopOpacity="0.22" />
           </linearGradient>
           <linearGradient id="cascada" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="#ffffff" stopOpacity="0.98" />
@@ -369,6 +386,13 @@ export default function WatershedLandscape({
             <stop offset="0%" stopColor="#2e7d32" stopOpacity="0" />
             <stop offset="100%" stopColor="#2e7d32" stopOpacity="0.38" />
           </linearGradient>
+
+          {/* Oculta cualquier vegetación que caiga sobre el agua */}
+          <mask id="mask-tierra" maskUnits="userSpaceOnUse" x="-800" y="-400" width="2600" height="1300">
+            <rect x="-800" y="-400" width="2600" height="1300" fill="#ffffff" />
+            <path d={rio.cauceCompleto} fill="#000000" />
+            <path d={LAGUNA} fill="#000000" />
+          </mask>
 
           <symbol id="pino" overflow="visible">
             <rect x="-2.4" y="-9" width="4.8" height="11" rx="1.6" fill="#6b4423" />
@@ -461,19 +485,14 @@ export default function WatershedLandscape({
 
         {/* CAPA 4: cascada con rocas y espuma */}
         <g>
-          {/* poza en la base, conectada al río */}
           <ellipse cx="472" cy="202" rx="27" ry="8" fill="#8ad3f5" opacity="0.85" />
-          {/* caída con ancho variable: más ancha al centro, más angosta al unirse al río */}
           <path d="M480 132 C472 154, 462 162, 466 200 L478 200 C482 162, 492 154, 494 132 Z" fill="url(#cascada)" />
           <path className="cascada-flujo" d="M487 136 C479 160, 473 176, 472 198" fill="none" stroke="#ffffff" strokeWidth="3.5" strokeDasharray="9 13" opacity="0.9" />
-          {/* hendidura en la ladera donde nace el agua */}
           <path d="M474 126 C482 131, 492 131, 500 126 L494 139 C488 134, 482 134, 478 139 Z" fill="#4d6b8b" />
-          {/* espuma difusa en la base */}
           <g className="espuma" fill="#ffffff">
             <ellipse cx="472" cy="200" rx="24" ry="8" opacity="0.5" />
             <ellipse cx="472" cy="203" rx="14" ry="5.5" opacity="0.8" />
           </g>
-          {/* rocas grises alrededor */}
           <use href="#roca" transform="translate(446 202) scale(1.15)" />
           <use href="#roca" transform="translate(498 204) scale(0.95)" />
           <use href="#roca" transform="translate(470 210) scale(1.3)" />
@@ -496,20 +515,26 @@ export default function WatershedLandscape({
         <path d="M-800 208 C-500 190, -200 224, 100 206 C400 188, 700 226, 1000 206 C1300 188, 1600 222, 1800 206 L1800 226 C1600 242, 1300 208, 1000 226 C700 244, 400 206, 100 224 C-200 242, -500 208, -800 226 Z" fill="#ffffff" />
         <path d="M-800 424 C-500 406, -200 440, 100 422 C400 404, 700 442, 1000 422 C1300 404, 1600 438, 1800 422 L1800 442 C1600 458, 1300 424, 1000 442 C700 460, 400 422, 100 440 C-200 458, -500 424, -800 442 Z" fill="#ffffff" />
 
-        {/* CAPA 8: río (arena, cauce, brillo y corriente) */}
+        {/* CAPA 8: río — cauce por tramo coloreado según calidad del agua */}
         <g>
           <path d={rio.arena} fill="url(#arena)" opacity="0.95" />
-          <path d={rio.cauce} fill="url(#aguaRio)" />
-          <path d={rio.brillo} fill="#bfe8fb" opacity="0.5" />
+          {TRAMOS.map((tramo) => {
+            const valor = state?.clasificaciones?.[tramo]?.calidadAgua?.valor ?? 0
+            return (
+              <g key={tramo}>
+                <path className="rio-animado" d={rio.tramos[tramo].cauce} fill={colorRio(valor)} />
+                <path d={rio.tramos[tramo].brillo} fill="#bfe8fb" opacity="0.42" />
+              </g>
+            )
+          })}
           <path d={rio.centro} fill="none" stroke="#ffffff" strokeWidth="2.4" strokeDasharray="7 16" opacity="0.55" className="rio-flujo" />
-          {/* Trayectorias del cauce por tramo (referencia para los peces) */}
           <path id="rio-alta" d={rio.alta} fill="none" stroke="none" />
           <path id="rio-media" d={rio.media} fill="none" stroke="none" />
           <path id="rio-baja" d={rio.baja} fill="none" stroke="none" />
-          {/* desembocadura: laguna ancha y curva, sin punta */}
-          <path d="M236 640 C258 590, 398 570, 520 572 C646 574, 774 594, 802 640 Z" fill="url(#arena)" opacity="0.95" />
-          <path d="M254 640 C274 598, 402 580, 520 582 C640 584, 760 602, 786 640 Z" fill="url(#aguaBaja)" />
-          <path d="M300 634 C330 608, 430 596, 520 597 C614 598, 706 610, 736 634 Z" fill="#8ad3f5" opacity="0.5" />
+          {/* desembocadura (color según calidad de la cuenca baja) */}
+          <path d={LAGUNA_ARENA} fill="url(#arena)" opacity="0.95" />
+          <path className="rio-animado" d={LAGUNA} fill={colorRio(state?.clasificaciones?.baja?.calidadAgua?.valor ?? 0)} />
+          <path d="M300 634 C330 608, 430 596, 520 597 C614 598, 706 610, 736 634 Z" fill="#8ad3f5" opacity="0.45" />
           <ellipse className="onda" cx="470" cy="300" rx="16" ry="5" fill="none" stroke="#ffffff" strokeWidth="1.6" opacity="0.35" />
           <ellipse className="onda" cx="452" cy="430" rx="20" ry="6" fill="none" stroke="#ffffff" strokeWidth="1.6" opacity="0.3" />
           <circle className="brillo" cx="500" cy="250" r="2" fill="#ffffff" opacity="0.5" />
@@ -517,144 +542,153 @@ export default function WatershedLandscape({
           <circle className="brillo" cx="500" cy="470" r="2.2" fill="#ffffff" opacity="0.5" />
         </g>
 
-        {/* CAPA 9: bosque, cultivos, poblado y elementos de decisión */}
-        {TRAMOS.map((tramo) => {
-          const f = caracteristicas[tramo]
-          const p = POSICIONES[tramo]
-          const valorBio = state?.clasificaciones?.[tramo]?.biodiversidad?.valor ?? 0
-          const nPeces = Math.max(1, Math.min(3, Math.round(valorBio / 4)))
-          const arboles = tramo === 'alta' ? nAlta : tramo === 'media' ? nMedia : nBaja
-          const tonos = tramo === 'media' ? TONOS_ARBOL : TONOS_PINO
-          const simbolo = tramo === 'alta' ? 'pino' : 'arbol'
-          return (
-            <g key={`capa-${tramo}-${revision}`} className="capa">
-              {arboles.map(([x, y, s], i) => {
-                const simboloArbol = tramo === 'baja' && i % 3 === 0 ? 'arbusto' : simbolo
-                return (
-                  <use
-                    key={i}
-                    href={`#${simboloArbol}`}
-                    className={i % 5 === 0 ? 'brisa' : undefined}
-                    transform={`translate(${x} ${y}) scale(${s})`}
-                    style={{ '--copa': tonos[i % tonos.length], '--copa2': tonos[(i + 2) % tonos.length] }}
-                  />
-                )
-              })}
+        {/* CAPA 9: bosque, cultivos, poblado y elementos de decisión (enmascarados fuera del agua) */}
+        <g mask="url(#mask-tierra)">
+          {TRAMOS.map((tramo) => {
+            const f = caracteristicas[tramo]
+            const p = POSICIONES[tramo]
+            const banco = rio.banco[tramo]
+            const valorBio = state?.clasificaciones?.[tramo]?.biodiversidad?.valor ?? 0
+            const densidad = densidadVegetacion(valorBio)
+            const seco = valorBio < 0
+            const base = tramo === 'alta' ? PINOS : tramo === 'media' ? ARBOLES : VEG_BAJA
+            const nArboles = Math.max(3, Math.round(base.length * densidad))
+            const arboles = base.slice(0, nArboles)
+            const tonos = tramo === 'media'
+              ? (seco ? TONOS_ARBOL_SECO : TONOS_ARBOL)
+              : (seco ? TONOS_PINO_SECO : TONOS_PINO)
+            const simbolo = tramo === 'alta' ? 'pino' : 'arbol'
+            const nPeces = valorBio <= -4 ? 0 : Math.max(1, Math.min(3, Math.round(valorBio / 4) + 1))
+            return (
+              <g key={`capa-${tramo}-${revision}`} className="capa">
+                {arboles.map(([x, y, s], i) => {
+                  const simboloArbol = tramo === 'baja' && i % 3 === 0 ? 'arbusto' : simbolo
+                  return (
+                    <use
+                      key={i}
+                      href={`#${simboloArbol}`}
+                      className={i % 5 === 0 ? 'brisa' : undefined}
+                      transform={`translate(${x} ${y}) scale(${s})`}
+                      style={{ '--copa': tonos[i % tonos.length], '--copa2': tonos[(i + 2) % tonos.length] }}
+                    />
+                  )
+                })}
 
-              {p.sueloExpuesto.slice(0, f.sueloExpuesto).map((x, i) => (
-                <ellipse key={i} className="aparece" cx={x} cy={p.suelo + 6} rx="34" ry="8" fill="#b98a52" opacity="0.75" />
-              ))}
+                {p.sueloExpuesto.slice(0, f.sueloExpuesto).map((x, i) => (
+                  <ellipse key={i} className="aparece" cx={x} cy={p.suelo + 6} rx="34" ry="8" fill="#b98a52" opacity="0.75" />
+                ))}
 
-              {/* cultivos / parcelas */}
-              {f.cultivos !== 'none' ? (
-                <g className="aparece">
-                  {[0, 1, 2].map((k) => (
-                    <g key={k} transform={`translate(${624 + k * 66} ${p.suelo - 6})`}>
-                      <rect x="0" y="-16" width="56" height="16" rx="2" fill={k % 2 === 0 ? '#cddc39' : '#9ccc65'} opacity="0.92" />
-                      {[0, 1, 2, 3].map((r) => (
-                        <path key={r} d={`M${7 + r * 13} -16 v16`} stroke="#7fa03a" strokeWidth="1.4" opacity="0.65" />
-                      ))}
-                    </g>
-                  ))}
-                  {f.cultivos === 'intensivo' ? (
-                    <g transform={`translate(706 ${p.suelo - 22})`}>
-                      <rect x="-8" y="-10" width="16" height="10" rx="2" fill="#78716c" />
-                      <circle cx="-4" cy="-13" r="3" fill="#dc2626" />
-                    </g>
-                  ) : null}
-                </g>
-              ) : null}
-
-              {/* poblado (cuenca media) integrado con camino y vegetación */}
-              {tramo === 'media' ? (
-                <g className="aparece">
-                  <path d="M540 408 C610 400, 700 404, 812 396" fill="none" stroke="#c9a96a" strokeWidth="11" strokeLinecap="round" opacity="0.9" />
-                  <path d="M540 408 C610 400, 700 404, 812 396" fill="none" stroke="#f0d9a6" strokeWidth="7" strokeLinecap="round" opacity="0.95" />
-                  <use href="#casa" transform="translate(660 400) scale(0.95)" style={{ '--techo': '#e05a3a' }} />
-                  <use href="#casa" transform="translate(700 402) scale(0.78)" style={{ '--techo': '#d98430' }} />
-                  <use href="#casa" transform="translate(736 400) scale(0.9)" style={{ '--techo': '#c94f3d' }} />
-                  <use href="#arbol" transform="translate(622 402) scale(0.62)" style={{ '--copa': '#4caf50', '--copa2': '#2e7d32' }} />
-                  <use href="#arbol" transform="translate(776 400) scale(0.58)" style={{ '--copa': '#43a047', '--copa2': '#2e7d32' }} />
-                  <use href="#arbusto" transform="translate(648 406) scale(0.62)" style={{ '--copa': '#4caf50' }} />
-                  <use href="#arbusto" transform="translate(686 404) scale(0.7)" style={{ '--copa': '#43a047' }} />
-                  <use href="#arbusto" transform="translate(718 406) scale(0.6)" style={{ '--copa': '#4caf50' }} />
-                </g>
-              ) : null}
-
-              {/* ronda ribereña */}
-              {f.riberas !== 'descuidada' ? (
-                <g className="aparece" stroke={f.riberas === 'restaurada' ? '#2e7d32' : '#43a047'} strokeWidth="3" strokeLinecap="round" opacity="0.85">
-                  <path d={`M${tramo === 'baja' ? 520 : 470} ${p.suelo - 6} q-10 -12 -20 -6`} fill="none" />
-                  <path d={`M${tramo === 'baja' ? 600 : 560} ${p.suelo - 6} q10 -12 20 -6`} fill="none" />
-                </g>
-              ) : (
-                <g className="aparece" stroke="#b98a52" strokeWidth="3" strokeLinecap="round" opacity="0.75">
-                  <path d="M470 ${p.suelo - 4} h-30" />
-                  <path d="M560 ${p.suelo - 4} h30" />
-                </g>
-              )}
-
-              {f.mineria !== 'none' ? (
-                <Posicionado transform={`translate(880 ${p.suelo - 8})`}>
-                  {f.mineria === 'informal' ? (
-                    <>
-                      <path d="M-40 8 L-10 -26 L20 8 Z" fill="#6b7280" />
-                      <rect x="-6" y="-6" width="16" height="14" fill="#4b5563" />
-                      <path d="M-30 8 h60" stroke="#374151" strokeWidth="4" />
-                      <g transform="translate(-42 -34)">
-                        <path d="M0 8 L10 -8 L20 8 Z" fill="#facc15" />
-                        <text x="10" y="6" textAnchor="middle" fontSize="10" fontWeight="700" fill="#78350f">!</text>
+                {/* cultivos / parcelas */}
+                {f.cultivos !== 'none' ? (
+                  <g className="aparece">
+                    {[0, 1, 2].map((k) => (
+                      <g key={k} transform={`translate(${624 + k * 66} ${p.suelo - 6})`}>
+                        <rect x="0" y="-16" width="56" height="16" rx="2" fill={k % 2 === 0 ? '#cddc39' : '#9ccc65'} opacity="0.92" />
+                        {[0, 1, 2, 3].map((r) => (
+                          <path key={r} d={`M${7 + r * 13} -16 v16`} stroke="#7fa03a" strokeWidth="1.4" opacity="0.65" />
+                        ))}
                       </g>
-                    </>
-                  ) : (
-                    <>
-                      <rect x="-30" y="-20" width="60" height="28" rx="4" fill="#a8a29e" />
-                      <rect x="-24" y="-14" width="18" height="14" fill="#38bdf8" />
-                      <rect x="0" y="-14" width="18" height="14" fill="#38bdf8" />
-                      <path d="M-30 8 h60" stroke="#57534e" strokeWidth="4" />
-                    </>
-                  )}
-                </Posicionado>
-              ) : null}
+                    ))}
+                    {f.cultivos === 'intensivo' ? (
+                      <g transform={`translate(706 ${p.suelo - 22})`}>
+                        <rect x="-8" y="-10" width="16" height="10" rx="2" fill="#78716c" />
+                        <circle cx="-4" cy="-13" r="3" fill="#dc2626" />
+                      </g>
+                    ) : null}
+                  </g>
+                ) : null}
 
-              {f.vertimiento !== 'none' ? (
-                <Posicionado transform={`translate(410 ${p.suelo - 4})`}>
-                  <rect x="-26" y="-8" width="26" height="8" rx="2" fill="#57534e" />
-                  <path d="M0 0 q10 8 22 10 q-12 6 -22 -2Z" fill={f.vertimiento === 'sin_tratamiento' ? '#7c4a15' : f.vertimiento === 'parcial' ? '#b07a2e' : '#4bb2ea'} opacity="0.9" />
-                  {f.vertimiento === 'completo' ? (
-                    <g transform="translate(-38 -18)">
-                      <circle r="9" fill="#dcfce7" stroke="#16a34a" strokeWidth="2" />
-                      <path d="M-4 0 l3 3 5 -6" fill="none" stroke="#15803d" strokeWidth="2" strokeLinecap="round" />
-                    </g>
-                  ) : null}
-                </Posicionado>
-              ) : null}
+                {/* poblado (cuenca media) integrado con camino y vegetación */}
+                {tramo === 'media' ? (
+                  <g className="aparece">
+                    <path d="M540 408 C610 400, 700 404, 812 396" fill="none" stroke="#c9a96a" strokeWidth="11" strokeLinecap="round" opacity="0.9" />
+                    <path d="M540 408 C610 400, 700 404, 812 396" fill="none" stroke="#f0d9a6" strokeWidth="7" strokeLinecap="round" opacity="0.95" />
+                    <use href="#casa" transform="translate(660 400) scale(0.95)" style={{ '--techo': '#e05a3a' }} />
+                    <use href="#casa" transform="translate(700 402) scale(0.78)" style={{ '--techo': '#d98430' }} />
+                    <use href="#casa" transform="translate(736 400) scale(0.9)" style={{ '--techo': '#c94f3d' }} />
+                    <use href="#arbol" transform="translate(622 402) scale(0.62)" style={{ '--copa': '#4caf50', '--copa2': '#2e7d32' }} />
+                    <use href="#arbol" transform="translate(776 400) scale(0.58)" style={{ '--copa': '#43a047', '--copa2': '#2e7d32' }} />
+                    <use href="#arbusto" transform="translate(648 406) scale(0.62)" style={{ '--copa': '#4caf50' }} />
+                    <use href="#arbusto" transform="translate(686 404) scale(0.7)" style={{ '--copa': '#43a047' }} />
+                    <use href="#arbusto" transform="translate(718 406) scale(0.6)" style={{ '--copa': '#4caf50' }} />
+                  </g>
+                ) : null}
 
-              {f.captacion === 'sobreextraccion' ? (
-                <Posicionado transform={`translate(560 ${p.suelo - 2})`}>
-                  <path d="M0 0 v-22 h16" stroke="#475569" strokeWidth="5" fill="none" />
-                  <circle cx="20" cy="-24" r="7" fill="#ef4444" />
-                </Posicionado>
-              ) : f.captacion === 'eficiente' ? (
-                <Posicionado transform={`translate(560 ${p.suelo - 2})`}>
-                  <path d="M0 0 v-18 h14" stroke="#0f68cd" strokeWidth="4" fill="none" />
-                  <circle cx="18" cy="-20" r="6" fill="#22c55e" />
-                </Posicionado>
-              ) : null}
+                {/* ronda ribereña: arbustos sobre los bancos (fuera del cauce) */}
+                {f.riberas !== 'descuidada' ? (
+                  <g className="aparece">
+                    <use href="#arbusto" transform={`translate(${banco.xIzq - 28} ${banco.y}) scale(0.75)`} style={{ '--copa': f.riberas === 'restaurada' ? '#2e7d32' : '#43a047' }} />
+                    <use href="#arbusto" transform={`translate(${banco.xDer + 28} ${banco.y}) scale(0.75)`} style={{ '--copa': f.riberas === 'restaurada' ? '#2e7d32' : '#43a047' }} />
+                  </g>
+                ) : (
+                  <g className="aparece">
+                    <ellipse cx={banco.xIzq - 22} cy={banco.y + 4} rx="18" ry="5" fill="#b98a52" opacity="0.7" />
+                    <ellipse cx={banco.xDer + 22} cy={banco.y + 4} rx="18" ry="5" fill="#b98a52" opacity="0.7" />
+                  </g>
+                )}
 
-              {f.gobernanza ? (
-                <Posicionado transform={`translate(70 ${p.suelo - 6})`}>
-                  <path d="M0 0 v-26" stroke="#57534e" strokeWidth="3" />
-                  <path d="M0 -26 l20 6 l-20 6 z" fill="#0f68cd" />
-                </Posicionado>
-              ) : null}
+                {f.mineria !== 'none' ? (
+                  <Posicionado transform={`translate(880 ${p.suelo - 8})`}>
+                    {f.mineria === 'informal' ? (
+                      <>
+                        <path d="M-40 8 L-10 -26 L20 8 Z" fill="#6b7280" />
+                        <rect x="-6" y="-6" width="16" height="14" fill="#4b5563" />
+                        <path d="M-30 8 h60" stroke="#374151" strokeWidth="4" />
+                        <g transform="translate(-42 -34)">
+                          <path d="M0 8 L10 -8 L20 8 Z" fill="#facc15" />
+                          <text x="10" y="6" textAnchor="middle" fontSize="10" fontWeight="700" fill="#78350f">!</text>
+                        </g>
+                      </>
+                    ) : (
+                      <>
+                        <rect x="-30" y="-20" width="60" height="28" rx="4" fill="#a8a29e" />
+                        <rect x="-24" y="-14" width="18" height="14" fill="#38bdf8" />
+                        <rect x="0" y="-14" width="18" height="14" fill="#38bdf8" />
+                        <path d="M-30 8 h60" stroke="#57534e" strokeWidth="4" />
+                      </>
+                    )}
+                  </Posicionado>
+                ) : null}
 
-              {Array.from({ length: nPeces }).map((_, i) => (
-                <Pez key={i} tramo={tramo} i={i} />
-              ))}
-            </g>
-          )
-        })}
+                {f.vertimiento !== 'none' ? (
+                  <Posicionado transform={`translate(410 ${p.suelo - 4})`}>
+                    <rect x="-26" y="-8" width="26" height="8" rx="2" fill="#57534e" />
+                    <path d="M0 0 q10 8 22 10 q-12 6 -22 -2Z" fill={f.vertimiento === 'sin_tratamiento' ? '#7c4a15' : f.vertimiento === 'parcial' ? '#b07a2e' : '#4bb2ea'} opacity="0.9" />
+                    {f.vertimiento === 'completo' ? (
+                      <g transform="translate(-38 -18)">
+                        <circle r="9" fill="#dcfce7" stroke="#16a34a" strokeWidth="2" />
+                        <path d="M-4 0 l3 3 5 -6" fill="none" stroke="#15803d" strokeWidth="2" strokeLinecap="round" />
+                      </g>
+                    ) : null}
+                  </Posicionado>
+                ) : null}
+
+                {f.captacion === 'sobreextraccion' ? (
+                  <Posicionado transform={`translate(560 ${p.suelo - 2})`}>
+                    <path d="M0 0 v-22 h16" stroke="#475569" strokeWidth="5" fill="none" />
+                    <circle cx="20" cy="-24" r="7" fill="#ef4444" />
+                  </Posicionado>
+                ) : f.captacion === 'eficiente' ? (
+                  <Posicionado transform={`translate(560 ${p.suelo - 2})`}>
+                    <path d="M0 0 v-18 h14" stroke="#0f68cd" strokeWidth="4" fill="none" />
+                    <circle cx="18" cy="-20" r="6" fill="#22c55e" />
+                  </Posicionado>
+                ) : null}
+
+                {f.gobernanza ? (
+                  <Posicionado transform={`translate(70 ${p.suelo - 6})`}>
+                    <path d="M0 0 v-26" stroke="#57534e" strokeWidth="3" />
+                    <path d="M0 -26 l20 6 l-20 6 z" fill="#0f68cd" />
+                  </Posicionado>
+                ) : null}
+
+                {Array.from({ length: nPeces }).map((_, i) => (
+                  <Pez key={i} tramo={tramo} i={i} />
+                ))}
+              </g>
+            )
+          })}
+        </g>
 
         {/* CAPA 10: primer plano (viñeta suave, sin corte duro) */}
         <rect x="-800" y="470" width="2600" height="430" fill="url(#vinetaBaja)" />
@@ -662,10 +696,12 @@ export default function WatershedLandscape({
         <use href="#arbusto" transform="translate(150 632) scale(1.1)" style={{ '--copa': '#43a047' }} />
         <use href="#arbusto" transform="translate(920 634) scale(1.3)" style={{ '--copa': '#2e7d32' }} />
 
-        {/* Etiquetas de tramo e indicadores de estado */}
+        {/* Etiquetas de tramo, indicadores de estado y alertas */}
         {TRAMOS.map((tramo, i) => {
           const top = [0, 214, 430][i]
-          const valorCalidad = state?.clasificaciones?.[tramo]?.calidadAgua?.valor ?? 0
+          const cl = state?.clasificaciones?.[tramo]
+          const valorCalidad = cl?.calidadAgua?.valor ?? 0
+          const alerta = (cl?.resiliencia?.valor ?? 0) <= -6 || (cl?.disponibilidad?.valor ?? 0) <= -6
           return (
             <g key={tramo}>
               <g>
@@ -675,6 +711,13 @@ export default function WatershedLandscape({
                 </text>
               </g>
               <circle cx="202" cy={top + 27} r="8" fill={colorRio(valorCalidad)} stroke="#ffffff" strokeWidth="2" />
+              {alerta ? (
+                <g transform={`translate(224 ${top + 27})`} className="aparece">
+                  <path d="M0 -9 L9 8 L-9 8 Z" fill="#dc2626" stroke="#ffffff" strokeWidth="1.2" />
+                  <text x="0" y="6" textAnchor="middle" fontSize="10" fontWeight="700" fill="#ffffff">!</text>
+                  <title>Alerta: disponibilidad o resiliencia en deterioro fuerte</title>
+                </g>
+              ) : null}
             </g>
           )
         })}

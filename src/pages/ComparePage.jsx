@@ -4,6 +4,7 @@ import { watershedMatrix } from '../data/watershedMatrix.js'
 import { INDICADOR_CORTO, INDICADOR_ICONO, TRAMO_LABEL, TRAMOS, INDICADORES } from '../data/dimensions.js'
 import ClassificationBadge from '../components/ui/ClassificationBadge.jsx'
 import SlideDeck from '../components/ui/SlideDeck.jsx'
+import ShareButton from '../components/ui/ShareButton.jsx'
 import Button from '../components/ui/Button.jsx'
 import Icon from '../components/ui/Icon.jsx'
 
@@ -63,7 +64,7 @@ function TarjetaEscenario({ slot, guardado, estado, onGuardar, onCargar, onBorra
  * Comparación de escenarios A y B en formato diapositivas.
  */
 export default function ComparePage({ sim, onNavigate }) {
-  const { savedScenarios, guardarEscenario, cargarEscenario, borrarEscenario, reiniciar } = sim
+  const { savedScenarios, guardarEscenario, cargarEscenario, borrarEscenario, reiniciar, decisions, stressId } = sim
 
   const estadoA = useMemo(() => estadoDe(savedScenarios.A), [savedScenarios.A])
   const estadoB = useMemo(() => estadoDe(savedScenarios.B), [savedScenarios.B])
@@ -151,6 +152,7 @@ export default function ComparePage({ sim, onNavigate }) {
           <Icon name="flecha_izq" className="h-4 w-4" />
           <span className="hidden sm:inline">Volver</span>
         </Button>
+        <ShareButton decisions={decisions} stressId={stressId} />
       </header>
 
       <div className="min-h-0 flex-1">

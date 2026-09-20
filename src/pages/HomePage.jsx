@@ -2,7 +2,7 @@ import { motion } from 'motion/react'
 import Button from '../components/ui/Button.jsx'
 import Icon from '../components/ui/Icon.jsx'
 import WatershedLandscape from '../components/watershed/WatershedLandscape.jsx'
-import LazyParticles from '../components/media/LazyParticles.jsx'
+import BubblesBackground from '../components/media/BubblesBackground.jsx'
 
 const TRAMOS_INFO = [
   { icono: 'montana', titulo: 'Cuenca Alta', texto: 'Nacimientos y bosques.' },
@@ -22,7 +22,7 @@ const item = {
 export default function HomePage({ onNavigate, state, decisions }) {
   return (
     <div className="relative h-full w-full">
-      <LazyParticles className="pointer-events-none absolute inset-0" />
+      <BubblesBackground />
       <div className="relative flex h-full min-h-0 flex-col gap-4 lg:flex-row lg:items-stretch lg:gap-8">
         <motion.section
           className="flex shrink-0 flex-col justify-center gap-2 lg:min-h-0 lg:flex-1"

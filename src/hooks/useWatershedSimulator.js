@@ -90,6 +90,16 @@ export function useWatershedSimulator() {
     [setSavedScenarios],
   )
 
+  /** Carga un escenario compartido (desde la URL) como escenario resuelto. */
+  const aplicarEscenario = useCallback(
+    ({ decisions: dec, stressId: estr } = {}) => {
+      setDecisions(dec ?? {})
+      setStressId(estr ?? null)
+      setCurrentStep(TOTAL_DECISIONES)
+    },
+    [setDecisions, setStressId, setCurrentStep],
+  )
+
   return {
     decisions,
     selecciones,
@@ -104,6 +114,7 @@ export function useWatershedSimulator() {
     guardarEscenario,
     cargarEscenario,
     borrarEscenario,
+    aplicarEscenario,
     setDecision,
     removeDecision,
     reiniciar,

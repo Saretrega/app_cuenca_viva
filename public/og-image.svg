@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="Cuenca Viva: simulador educativo de cuencas hidrográficas">
+  <defs>
+    <linearGradient id="cielo" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#5cb4ec"/>
+      <stop offset="60%" stop-color="#a9d8f6"/>
+      <stop offset="100%" stop-color="#dcefFC"/>
+    </linearGradient>
+    <linearGradient id="montana" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7d9cbb"/>
+      <stop offset="100%" stop-color="#4d6b8b"/>
+    </linearGradient>
+    <linearGradient id="colina" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#a7d95e"/>
+      <stop offset="100%" stop-color="#6cae38"/>
+    </linearGradient>
+    <linearGradient id="rio" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7fd0f5"/>
+      <stop offset="100%" stop-color="#2f9fe0"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#cielo)"/>
+  <circle cx="1030" cy="110" r="58" fill="#ffe27a"/>
+
+  <!-- Montañas nevadas -->
+  <path d="M60 360 L300 120 L540 360 Z" fill="url(#montana)"/>
+  <path d="M300 120 L410 240 L340 226 L300 250 L258 224 L200 236 Z" fill="#ffffff"/>
+  <path d="M420 360 L680 90 L960 360 Z" fill="#6b8cae"/>
+  <path d="M680 90 L810 240 L750 224 L700 252 L650 222 L600 244 Z" fill="#ffffff"/>
+  <path d="M860 360 L1060 170 L1260 360 Z" fill="url(#montana)"/>
+  <path d="M1060 170 L1130 250 L1090 240 L1050 262 L1010 242 Z" fill="#ffffff"/>
+
+  <!-- Colinas y llanura -->
+  <path d="M0 380 C200 330, 400 392, 620 356 C820 324, 1000 386, 1200 350 L1200 630 L0 630 Z" fill="url(#colina)"/>
+  <path d="M0 470 C220 430, 460 490, 700 456 C900 428, 1080 484, 1200 456 L1200 630 L0 630 Z" fill="#8cc84a" opacity="0.7"/>
+
+  <!-- Río -->
+  <path d="M640 300 C600 350, 700 400, 640 460 C590 510, 700 560, 660 630 L760 630 C800 560, 690 510, 740 460 C800 400, 700 350, 740 300 Z" fill="url(#rio)" opacity="0.95"/>
+  <path d="M660 320 C630 360, 700 400, 660 450" fill="none" stroke="#ffffff" stroke-width="5" stroke-dasharray="10 14" opacity="0.7"/>
+
+  <!-- Árboles -->
+  <g fill="#2e7d32">
+    <path d="M120 400 l-16 -34 h32 z"/><rect x="117" y="400" width="6" height="12" fill="#6b4423"/>
+    <path d="M210 392 l-14 -30 h28 z"/><rect x="207" y="392" width="6" height="12" fill="#6b4423"/>
+    <path d="M980 400 l-16 -34 h32 z"/><rect x="977" y="400" width="6" height="12" fill="#6b4423"/>
+    <path d="M1080 392 l-14 -30 h28 z"/><rect x="1077" y="392" width="6" height="12" fill="#6b4423"/>
+  </g>
+  <g fill="#43a047">
+    <circle cx="330" cy="420" r="22"/><rect x="327" y="420" width="6" height="14" fill="#6b4423"/>
+    <circle cx="880" cy="424" r="24"/><rect x="877" y="424" width="6" height="14" fill="#6b4423"/>
+  </g>
+
+  <!-- Texto -->
+  <text x="70" y="150" font-family="Segoe UI, system-ui, sans-serif" font-size="82" font-weight="800" fill="#0f3d5c" letter-spacing="1">CUENCA VIVA</text>
+  <text x="72" y="205" font-family="Segoe UI, system-ui, sans-serif" font-size="34" font-weight="600" fill="#166534">Cada decisión deja huella en el agua.</text>
+  <text x="72" y="252" font-family="Segoe UI, system-ui, sans-serif" font-size="24" fill="#334155">Simulador educativo de cuencas hidrográficas</text>
+</svg>

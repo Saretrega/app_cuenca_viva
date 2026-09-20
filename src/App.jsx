@@ -1,15 +1,19 @@
-import { useCallback, useState } from 'react'
-import { AnimatePresence, motion } from 'motion/react'
+import { lazy, Suspense, useCallback, useEffect, useState } from 'react'
+import { AnimatePresence, MotionConfig, motion } from 'motion/react'
 import useWatershedSimulator from './hooks/useWatershedSimulator.js'
+import { decodificarEscenario } from './utils/share.js'
 import HomePage from './pages/HomePage.jsx'
-import HowItWorksPage from './pages/HowItWorksPage.jsx'
-import SciencePage from './pages/SciencePage.jsx'
-import SimulationPage from './pages/SimulationPage.jsx'
-import ResultsPage from './pages/ResultsPage.jsx'
-import StressPage from './pages/StressPage.jsx'
-import ReflectionPage from './pages/ReflectionPage.jsx'
-import ComparePage from './pages/ComparePage.jsx'
+import PageFallback from './components/ui/PageFallback.jsx'
 import Icon from './components/ui/Icon.jsx'
+
+// HomePage se mantiene estática (primera pantalla); el resto se carga bajo demanda.
+const HowItWorksPage = lazy(() => import('./pages/HowItWorksPage.jsx'))
+const SciencePage = lazy(() => import('./pages/SciencePage.jsx'))
+const SimulationPage = lazy(() => import('./pages/SimulationPage.jsx'))
+const ResultsPage = lazy(() => import('./pages/ResultsPage.jsx'))
+const StressPage = lazy(() => import('./pages/StressPage.jsx'))
+const ReflectionPage = lazy(() => import('./pages/ReflectionPage.jsx'))
+const ComparePage = lazy(() => import('./pages/ComparePage.jsx'))
 
 const NAV = [
   { id: 'home', label: 'Inicio', icono: 'casa' },
@@ -40,56 +44,70 @@ function renderPagina(page, sim, navigate) {
 
 export default function App() {
   const sim = useWatershedSimulator()
+  const { aplicarEscenario } = sim
   const [page, setPage] = useState('home')
 
   const navigate = useCallback((destino) => {
     setPage(destino)
   }, [])
 
+  // Carga un escenario compartido por URL (#cuenca=...) y muestra el resumen.
+  useEffect(() => {
+    const escenario = decodificarEscenario(window.location.hash)
+    if (escenario) {
+      // oxlint-disable-next-line react/set-state-in-effect
+      aplicarEscenario(escenario)
+      // oxlint-disable-next-line react/set-state-in-effect
+      setPage('results')
+    }
+  }, [aplicarEscenario])
+
   return (
-    <div className="relative flex h-dvh w-full flex-col overflow-hidden">
-      <a
-        href="#contenido"
-        className="sr-only focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-50 focus:rounded-lg focus:bg-agua-700 focus:px-4 focus:py-2 focus:text-white"
-      >
-        Saltar al contenido
-      </a>
+    <MotionConfig reducedMotion="user">
+      <div className="relative flex h-dvh w-full flex-col overflow-hidden">
+        <a
+          href="#contenido"
+          className="sr-only focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-50 focus:rounded-lg focus:bg-agua-700 focus:px-4 focus:py-2 focus:text-white"
+        >
+          Saltar al contenido
+        </a>
 
-      <nav
-        aria-label="Navegación principal"
-        className="absolute left-1/2 top-2 z-40 flex -translate-x-1/2 items-center gap-0.5 rounded-full border border-tierra-200 bg-white/80 p-1 shadow-sm backdrop-blur sm:top-3"
-      >
-        {NAV.map((n) => (
-          <button
-            key={n.id}
-            type="button"
-            onClick={() => navigate(n.id)}
-            aria-label={n.label}
-            aria-current={page === n.id ? 'page' : undefined}
-            className={`flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-sm font-semibold transition-all hover:-translate-y-0.5 active:scale-95 sm:px-3 ${
-              page === n.id ? 'bg-agua-600 text-white' : 'text-slate-600 hover:bg-tierra-100'
-            }`}
-          >
-            <Icon name={n.icono} className="h-4 w-4" />
-            <span className="hidden md:inline">{n.label}</span>
-          </button>
-        ))}
-      </nav>
+        <nav
+          aria-label="Navegación principal"
+          className="absolute left-1/2 top-2 z-40 flex -translate-x-1/2 items-center gap-0.5 rounded-full border border-tierra-200 bg-white/80 p-1 shadow-sm backdrop-blur sm:top-3"
+        >
+          {NAV.map((n) => (
+            <button
+              key={n.id}
+              type="button"
+              onClick={() => navigate(n.id)}
+              aria-label={n.label}
+              aria-current={page === n.id ? 'page' : undefined}
+              className={`flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-sm font-semibold transition-all hover:-translate-y-0.5 active:scale-95 sm:px-3 ${
+                page === n.id ? 'bg-agua-600 text-white' : 'text-slate-600 hover:bg-tierra-100'
+              }`}
+            >
+              <Icon name={n.icono} className="h-4 w-4" />
+              <span className="hidden md:inline">{n.label}</span>
+            </button>
+          ))}
+        </nav>
 
-      <main id="contenido" className="relative min-h-0 flex-1 overflow-hidden px-2 pb-2 pt-12 sm:px-3 sm:pb-3 sm:pt-14">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={page}
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -16 }}
-            transition={{ duration: 0.3, ease: 'easeOut' }}
-            className="h-full"
-          >
-            {renderPagina(page, sim, navigate)}
-          </motion.div>
-        </AnimatePresence>
-      </main>
-    </div>
+        <main id="contenido" className="relative min-h-0 flex-1 overflow-hidden px-2 pb-2 pt-12 sm:px-3 sm:pb-3 sm:pt-14">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={page}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -16 }}
+              transition={{ duration: 0.3, ease: 'easeOut' }}
+              className="h-full"
+            >
+              <Suspense fallback={<PageFallback />}>{renderPagina(page, sim, navigate)}</Suspense>
+            </motion.div>
+          </AnimatePresence>
+        </main>
+      </div>
+    </MotionConfig>
   )
 }

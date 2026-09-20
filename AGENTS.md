@@ -51,6 +51,13 @@ npx vitest                       # modo watch
 - **lucide-react** para los íconos de apoyo en `src/components/ui/Icon.jsx` (el set propio solo queda para `vertimiento`).
 - **morphicons** (`morphicons/react`) en `src/components/ui/StateMorphIcon.jsx`: ícono de estado que se transforma (escudo "estable" ↔ triángulo "alerta").
 - **Chart.js + react-chartjs-2** en `src/components/charts/WatershedBarChart.jsx`; usar siempre el wrapper `LazyWatershedChart` (registra solo lo necesario y separa el chunk).
-- **tsParticles** (`@tsparticles/react` + `slim`) en `src/components/media/ParticlesBackground.jsx`; usar vía `LazyParticles` y solo en Inicio. Respeta `prefers-reduced-motion`.
+- **tsParticles** se **eliminó**: el fondo del Inicio son burbujas CSS puras en `src/components/media/BubblesBackground.jsx` (respeta `prefers-reduced-motion`).
 - **lottie-web** disponible en `src/components/media/LottieIcon.jsx` (JSON en `src/assets/lottie/`); ahora mismo no está en uso.
-- Las librerías pesadas (anime, lottie, chart, tsparticles) van **en chunks separados** con import dinámico. Los tests mockean `motion/react`, `morphicons/react`, `LazyWatershedChart`, `LazyParticles` y `LottieIcon` (jsdom no tiene canvas ni geometría SVG).
+- Las librerías pesadas (anime, lottie, chart) van **en chunks separados** con import dinámico. Los tests mockean `motion/react`, `morphicons/react`, `LazyWatershedChart` y `LottieIcon` (jsdom no tiene canvas ni geometría SVG).
+
+## Rendimiento y accesibilidad
+
+- **Lazy loading de páginas**: en `App.jsx` solo `HomePage` se importa de forma estática; el resto usa `React.lazy` + `<Suspense fallback={<PageFallback/>}>`. Al añadir páginas nuevas, mantenerlas en lazy.
+- **prefers-reduced-motion**: la raíz de `App.jsx` está envuelta en `<MotionConfig reducedMotion="user">`, así que todas las animaciones de Motion lo respetan automáticamente. No hace falta consultar la preferencia en cada componente (anime.js/CSS sí lo consultan aparte).
+- **Compartir**: `src/utils/share.js` codifica decisiones + estrés en el hash `#cuenca=<base64url>`; `App.jsx` lo carga al iniciar y muestra el resumen. El botón `ShareButton` está en Resultados y Comparar.
+- **Metadatos**: Open Graph / Twitter Card y `theme-color` en `index.html`; imagen de vista previa en `public/og-image.png` (fuente editable `og-image.svg`).

@@ -43,6 +43,7 @@ vi.mock('motion/react', async () => {
   return {
     motion,
     AnimatePresence: ({ children }) => children,
+    MotionConfig: ({ children }) => children,
     useReducedMotion: () => false,
     useSpring: (value) => ({ get: () => value, set: () => {}, on: () => () => {} }),
     useTransform: (source, fn) => fn(source && typeof source.get === 'function' ? source.get() : source),
@@ -55,7 +56,6 @@ vi.mock('morphicons/react', async () => {
   }
 })
 vi.mock('./components/charts/LazyWatershedChart.jsx', () => ({ default: () => null }))
-vi.mock('./components/media/LazyParticles.jsx', () => ({ default: () => null }))
 vi.mock('./components/media/LottieIcon.jsx', () => ({ default: () => null }))
 
 function decidir(alternativa) {
@@ -83,18 +83,21 @@ describe('App · flujo completo del simulador', () => {
     window.localStorage.clear()
   })
 
-  it('recorre las 7 decisiones, el resumen final y el estrés', () => {
+  it('recorre las 7 decisiones, el resumen final y el estrés', async () => {
     render(<App />)
 
     expect(screen.getAllByText('CUENCA VIVA').length).toBeGreaterThan(0)
     fireEvent.click(screen.getByText('Comenzar simulación'))
+
+    // SimulationPage se carga de forma diferida (React.lazy).
+    await screen.findByText('Continuar')
 
     for (let i = 0; i < categories.length; i += 1) {
       decidir(categories[i].alternativas[0])
     }
 
     // Resumen final en diapositivas
-    expect(screen.getByText('Resumen de tu cuenca')).toBeTruthy()
+    expect(await screen.findByText('Resumen de tu cuenca')).toBeTruthy()
     fireEvent.click(screen.getByLabelText('Ir a Historia de tu cuenca'))
     expect(screen.getByText('Decisiones favorables')).toBeTruthy()
     fireEvent.click(screen.getByLabelText('Ir a Causa-efecto'))
@@ -102,18 +105,18 @@ describe('App · flujo completo del simulador', () => {
 
     // Prueba de estrés
     fireEvent.click(screen.getByText('Probar estrés climático'))
-    expect(screen.getByText('Prueba de estrés climático')).toBeTruthy()
+    expect(await screen.findByText('Prueba de estrés climático')).toBeTruthy()
     fireEvent.click(screen.getByText('Sequía prolongada').closest('button'))
     expect(screen.getAllByText(/Antes vs\. después/).length).toBeGreaterThan(0)
 
     // Reflexión final (acción final de la última diapositiva de estrés)
     fireEvent.click(screen.getByLabelText('Ir a Detalle por tramo'))
     fireEvent.click(screen.getByText('¿Para quién es el agua?'))
-    expect(screen.getAllByText('¿Para quién es el agua?').length).toBeGreaterThan(0)
+    expect(await screen.findAllByText('¿Para quién es el agua?')).toBeTruthy()
 
     // Comparación
     fireEvent.click(screen.getByText('Comparar escenarios'))
-    const guardar = screen.getAllByText('Guardar')
+    const guardar = await screen.findAllByText('Guardar')
     fireEvent.click(guardar[0])
     fireEvent.click(guardar[1])
     fireEvent.click(screen.getByLabelText('Ir a Comparación detallada'))
@@ -122,10 +125,10 @@ describe('App · flujo completo del simulador', () => {
     expect(errores).toEqual([])
   })
 
-  it('permite iniciar el flujo desde la página Cómo funciona', () => {
+  it('permite iniciar el flujo desde la página Cómo funciona', async () => {
     render(<App />)
     fireEvent.click(screen.getAllByText('¿Cómo funciona?')[0])
-    expect(screen.getByText('Construye y transforma una cuenca')).toBeTruthy()
+    expect(await screen.findByText('Construye y transforma una cuenca')).toBeTruthy()
     fireEvent.click(screen.getByLabelText('Ir a Las siete decisiones'))
     expect(screen.getByText('Las siete decisiones')).toBeTruthy()
     expect(errores).toEqual([])

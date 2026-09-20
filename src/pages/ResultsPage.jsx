@@ -4,6 +4,7 @@ import CauseEffectList from '../components/results/CauseEffectList.jsx'
 import WatershedLandscape from '../components/watershed/WatershedLandscape.jsx'
 import LazyWatershedChart from '../components/charts/LazyWatershedChart.jsx'
 import SlideDeck from '../components/ui/SlideDeck.jsx'
+import ShareButton from '../components/ui/ShareButton.jsx'
 import Button from '../components/ui/Button.jsx'
 import Icon from '../components/ui/Icon.jsx'
 import { COLOR_TRAMO, INDICADOR_CORTO, INDICADORES, TRAMOS } from '../data/dimensions.js'
@@ -12,7 +13,7 @@ import { COLOR_TRAMO, INDICADOR_CORTO, INDICADORES, TRAMOS } from '../data/dimen
  * Página de resultados en formato diapositivas (estado, historia y causa-efecto).
  */
 export default function ResultsPage({ sim, onNavigate }) {
-  const { state, narrative, decisions } = sim
+  const { state, narrative, decisions, stressId } = sim
 
   const slides = [
     {
@@ -60,6 +61,7 @@ export default function ResultsPage({ sim, onNavigate }) {
             <Icon name="flecha_izq" className="h-4 w-4" />
             <span className="hidden sm:inline">Revisar decisiones</span>
           </Button>
+          <ShareButton decisions={decisions} stressId={stressId} />
           <Button size="sm" variant="bosque" onClick={() => onNavigate('reflection')}>
             <Icon name="gente" className="h-4 w-4" />
             <span className="hidden sm:inline">¿Para quién es el agua?</span>

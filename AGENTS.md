@@ -52,8 +52,8 @@ npx vitest                       # modo watch
 - **morphicons** (`morphicons/react`) en `src/components/ui/StateMorphIcon.jsx`: ícono de estado que se transforma (escudo "estable" ↔ triángulo "alerta").
 - **Chart.js + react-chartjs-2** en `src/components/charts/WatershedBarChart.jsx`; usar siempre el wrapper `LazyWatershedChart` (registra solo lo necesario y separa el chunk).
 - **tsParticles** se **eliminó**: el fondo del Inicio son burbujas CSS puras en `src/components/media/BubblesBackground.jsx` (respeta `prefers-reduced-motion`).
-- **lottie-web** disponible en `src/components/media/LottieIcon.jsx` (JSON en `src/assets/lottie/`); ahora mismo no está en uso.
-- Las librerías pesadas (anime, lottie, chart) van **en chunks separados** con import dinámico. Los tests mockean `motion/react`, `morphicons/react`, `LazyWatershedChart` y `LottieIcon` (jsdom no tiene canvas ni geometría SVG).
+- **lottie-web** y `LottieIcon.jsx` se **eliminaron** (no estaban en uso).
+- Las librerías pesadas (anime, chart) van **en chunks separados** con import dinámico. Los tests mockean `motion/react`, `morphicons/react` y `LazyWatershedChart` (jsdom no tiene canvas ni geometría SVG).
 
 ## Rendimiento y accesibilidad
 

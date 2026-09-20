@@ -30,7 +30,9 @@ export default function ShareButton({ decisions, stressId = null, className = ''
       title="Copiar enlace del escenario"
     >
       <Icon name={copiado ? 'check' : 'compartir'} className="h-4 w-4" />
-      <span className="hidden sm:inline">{copiado ? 'Enlace copiado' : 'Compartir enlace'}</span>
+      <span aria-live="polite" className={copiado ? 'inline' : 'hidden sm:inline'}>
+        {copiado ? 'Enlace copiado' : 'Compartir enlace'}
+      </span>
     </Button>
   )
 }

@@ -56,7 +56,6 @@ vi.mock('morphicons/react', async () => {
   }
 })
 vi.mock('./components/charts/LazyWatershedChart.jsx', () => ({ default: () => null }))
-vi.mock('./components/media/LottieIcon.jsx', () => ({ default: () => null }))
 
 function decidir(alternativa) {
   fireEvent.click(screen.getByText(alternativa).closest('button'))

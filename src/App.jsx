@@ -74,7 +74,7 @@ export default function App() {
 
         <nav
           aria-label="Navegación principal"
-          className="absolute left-1/2 top-2 z-40 flex -translate-x-1/2 items-center gap-0.5 rounded-full border border-tierra-200 bg-white/80 p-1 shadow-sm backdrop-blur sm:top-3"
+          className="absolute bottom-[calc(0.5rem+env(safe-area-inset-bottom,0px))] left-1/2 z-40 flex -translate-x-1/2 items-center gap-0.5 rounded-full border border-tierra-200 bg-white/80 p-1 shadow-sm backdrop-blur sm:bottom-[calc(0.75rem+env(safe-area-inset-bottom,0px))]"
         >
           {NAV.map((n) => (
             <button
@@ -93,7 +93,10 @@ export default function App() {
           ))}
         </nav>
 
-        <main id="contenido" className="relative min-h-0 flex-1 overflow-hidden px-2 pb-2 pt-12 sm:px-3 sm:pb-3 sm:pt-14">
+        <main
+          id="contenido"
+          className="relative min-h-0 flex-1 overflow-hidden px-2 pt-2 pb-[calc(3rem+env(safe-area-inset-bottom,0px))] sm:px-3 sm:pt-3 sm:pb-[calc(3.5rem+env(safe-area-inset-bottom,0px))]"
+        >
           <AnimatePresence mode="wait">
             <motion.div
               key={page}

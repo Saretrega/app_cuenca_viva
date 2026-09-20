@@ -1,0 +1,19 @@
+{
+  "name": "Cuenca Viva",
+  "short_name": "Cuenca Viva",
+  "description": "Simulador educativo interactivo sobre cuencas hidrográficas.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#eef7ff",
+  "theme_color": "#0f68cd",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

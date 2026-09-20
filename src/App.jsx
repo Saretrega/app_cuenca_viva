@@ -1,10 +1,12 @@
 import { lazy, Suspense, useCallback, useEffect, useState } from 'react'
 import { AnimatePresence, MotionConfig, motion } from 'motion/react'
 import useWatershedSimulator from './hooks/useWatershedSimulator.js'
+import useMobileLandscapeMode from './hooks/useMobileLandscapeMode.js'
 import { decodificarEscenario } from './utils/share.js'
 import HomePage from './pages/HomePage.jsx'
 import PageFallback from './components/ui/PageFallback.jsx'
 import Icon from './components/ui/Icon.jsx'
+import AvisoAgregarInicio from './components/ui/AvisoAgregarInicio.jsx'
 
 // HomePage se mantiene estática (primera pantalla); el resto se carga bajo demanda.
 const HowItWorksPage = lazy(() => import('./pages/HowItWorksPage.jsx'))
@@ -45,11 +47,18 @@ function renderPagina(page, sim, navigate) {
 export default function App() {
   const sim = useWatershedSimulator()
   const { aplicarEscenario } = sim
+  const { rotacionForzada, activarModoInmersivo, mostrarAvisoInicio, descartarAviso } = useMobileLandscapeMode()
   const [page, setPage] = useState('home')
 
-  const navigate = useCallback((destino) => {
-    setPage(destino)
-  }, [])
+  const navigate = useCallback(
+    (destino) => {
+      // Primer toque del usuario: único momento en que los navegadores permiten
+      // pedir pantalla completa / bloqueo de orientación (activarModoInmersivo no repite el intento).
+      activarModoInmersivo()
+      setPage(destino)
+    },
+    [activarModoInmersivo],
+  )
 
   // Carga un escenario compartido por URL (#cuenca=...) y muestra el resumen.
   useEffect(() => {
@@ -64,7 +73,10 @@ export default function App() {
 
   return (
     <MotionConfig reducedMotion="user">
-      <div className="relative flex h-dvh w-full flex-col overflow-hidden">
+      <div
+        className={`relative flex h-dvh w-full flex-col overflow-hidden ${rotacionForzada ? 'cv-rotar-horizontal' : ''}`}
+      >
+        {mostrarAvisoInicio ? <AvisoAgregarInicio onDescartar={descartarAviso} /> : null}
         <a
           href="#contenido"
           className="sr-only focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-50 focus:rounded-lg focus:bg-agua-700 focus:px-4 focus:py-2 focus:text-white"

@@ -242,6 +242,19 @@ body {
   transform-box: fill-box;
 }
 
+/* Respaldo cuando la Screen Orientation API no existe o falla (p. ej. iOS Safari):
+   rota visualmente la app 90° e intercambia ancho/alto usados para el layout,
+   pivotando desde la esquina superior izquierda para volver a llenar la pantalla. */
+.cv-rotar-horizontal {
+  position: fixed;
+  top: 0;
+  left: 100%;
+  width: 100dvh;
+  height: 100dvw;
+  transform-origin: 0 0;
+  transform: rotate(90deg);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

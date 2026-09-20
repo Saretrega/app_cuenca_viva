@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import ClassificationBadge from '../ui/ClassificationBadge.jsx'
 import Icon from '../ui/Icon.jsx'
 import { INDICADOR_CORTO, INDICADOR_ICONO, INDICADOR_LABEL } from '../../data/dimensions.js'

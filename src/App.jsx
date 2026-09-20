@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'motion/react'
 import useWatershedSimulator from './hooks/useWatershedSimulator.js'
 import HomePage from './pages/HomePage.jsx'
 import HowItWorksPage from './pages/HowItWorksPage.jsx'

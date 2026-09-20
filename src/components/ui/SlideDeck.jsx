@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'motion/react'
 import Button from './Button.jsx'
 import Icon from './Icon.jsx'
 

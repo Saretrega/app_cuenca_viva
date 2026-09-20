@@ -5,7 +5,7 @@ import App from './App.jsx'
 import { categories } from './data/categories.js'
 
 // jsdom no implementa canvas ni el motor de animación: se mockean las capas pesadas.
-vi.mock('framer-motion', async () => {
+vi.mock('motion/react', async () => {
   const React = await import('react')
   const make = (tag) => (props) => {
     const {
@@ -28,6 +28,13 @@ vi.mock('framer-motion', async () => {
     {},
     {
       get: (_t, tag) => {
+        if (tag === 'create') {
+          return (as) => {
+            const key = `c:${as}`
+            if (!cache[key]) cache[key] = make(as)
+            return cache[key]
+          }
+        }
         if (!cache[tag]) cache[tag] = make(tag)
         return cache[tag]
       },
@@ -37,6 +44,14 @@ vi.mock('framer-motion', async () => {
     motion,
     AnimatePresence: ({ children }) => children,
     useReducedMotion: () => false,
+    useSpring: (value) => ({ get: () => value, set: () => {}, on: () => () => {} }),
+    useTransform: (source, fn) => fn(source && typeof source.get === 'function' ? source.get() : source),
+  }
+})
+vi.mock('morphicons/react', async () => {
+  const React = await import('react')
+  return {
+    MorphIcon: ({ label }) => React.createElement('span', { 'data-morph': label ?? '' }),
   }
 })
 vi.mock('./components/charts/LazyWatershedChart.jsx', () => ({ default: () => null }))

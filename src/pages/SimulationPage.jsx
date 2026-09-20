@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'motion/react'
 import { categories } from '../data/categories.js'
 import DecisionStep from '../components/decisions/DecisionStep.jsx'
 import DecisionProgress from '../components/decisions/DecisionProgress.jsx'

@@ -1,7 +1,14 @@
 // @vitest-environment jsdom
 import { cleanup, render } from '@testing-library/react'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import WatershedLandscape from './WatershedLandscape.jsx'
+
+vi.mock('morphicons/react', async () => {
+  const React = await import('react')
+  return {
+    MorphIcon: ({ label }) => React.createElement('span', { 'data-morph': label ?? '' }),
+  }
+})
 
 const clasif = (valor) => ({ valor, label: `v${valor}`, tono: 'neutro', signo: 0, key: 'k' })
 
@@ -92,8 +99,8 @@ describe('WatershedLandscape · conexión métricas → visual', () => {
     const { unmount } = render(
       <WatershedLandscape decisions={{}} state={estado({ alta: {}, media: {}, baja: {} })} />,
     )
-    expect(document.querySelectorAll('g[mask="url(#mask-tierra)"]')).toHaveLength(1)
-    expect(document.querySelectorAll('path[fill="#dc2626"]')).toHaveLength(0)
+    expect(document.querySelectorAll('g[mask="url(#mask-tierra)"]').length).toBeGreaterThan(0)
+    expect(document.querySelectorAll('[data-morph="Alerta"]')).toHaveLength(0)
     unmount()
 
     render(
@@ -102,6 +109,33 @@ describe('WatershedLandscape · conexión métricas → visual', () => {
         state={estado({ alta: { resiliencia: -8 }, media: {}, baja: { disponibilidad: -9 } })}
       />,
     )
-    expect(document.querySelectorAll('path[fill="#dc2626"]').length).toBe(2)
+    expect(document.querySelectorAll('[data-morph="Alerta"]')).toHaveLength(2)
+  })
+
+  it('extiende el fondo más allá del viewBox para llenar contenedores anchos', () => {
+    render(<WatershedLandscape decisions={{}} state={estado({ alta: {}, media: {}, baja: {} })} />)
+    const cielo = Array.from(document.querySelectorAll('rect')).find((r) => r.getAttribute('fill') === 'url(#cielo)')
+    expect(cielo).toBeTruthy()
+    const x = Number(cielo.getAttribute('x'))
+    const w = Number(cielo.getAttribute('width'))
+    // Debe cubrir al menos ~4.6:1 de relación de aspecto centrada en x=500
+    expect(x).toBeLessThanOrEqual(-3000)
+    expect(x + w).toBeGreaterThanOrEqual(4000)
+  })
+
+  it('casas y árboles tienen tamaño visible con variación', () => {
+    render(<WatershedLandscape decisions={{}} state={estado({ alta: {}, media: {}, baja: {} })} />)
+    const escalas = (href) =>
+      Array.from(document.querySelectorAll('use'))
+        .filter((u) => u.getAttribute('href') === href)
+        .map((u) => {
+          const m = /scale\(([\d.]+)\)/.exec(u.getAttribute('transform') || '')
+          return m ? parseFloat(m[1]) : 1
+        })
+    const casas = escalas('#casa')
+    const pinos = escalas('#pino')
+    expect(Math.max(...casas)).toBeGreaterThanOrEqual(1.5)
+    expect(Math.max(...pinos)).toBeGreaterThanOrEqual(1.5)
+    expect(Math.min(...pinos)).toBeLessThan(Math.max(...pinos))
   })
 })

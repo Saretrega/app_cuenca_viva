@@ -1,4 +1,5 @@
 import Icon from './Icon.jsx'
+import { AnimatedNumber } from '../motion-primitives/animated-number.jsx'
 
 const ESTILOS = {
   deterioro: {
@@ -37,9 +38,9 @@ export default function ClassificationBadge({ clasificacion, compacto = false })
       }`}
     >
       <Icon name={estilo.icono} className={compacto ? 'h-3.5 w-3.5' : 'h-4 w-4'} />
-      <span className="tabular-nums">
-        {valor > 0 ? '+' : ''}
-        {valor}
+      <span className="inline-flex items-center tabular-nums">
+        {valor > 0 ? '+' : valor < 0 ? '−' : ''}
+        <AnimatedNumber value={Math.abs(valor)} />
       </span>
       {!compacto ? <span className="font-medium">{clasificacion?.label}</span> : null}
     </span>

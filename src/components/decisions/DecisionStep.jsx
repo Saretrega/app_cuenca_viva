@@ -4,6 +4,7 @@ import AlternativeCard from './AlternativeCard.jsx'
 import LocationPicker from './LocationPicker.jsx'
 import Icon from '../ui/Icon.jsx'
 import Button from '../ui/Button.jsx'
+import { AnimatedGroup } from '../motion-primitives/animated-group.jsx'
 
 /**
  * Paso de una decisión a pantalla completa. Layout con gaps explícitos:
@@ -38,21 +39,24 @@ export default function DecisionStep({ category, decision, paso, total, onContin
         <h3 className="shrink-0 text-[11px] font-bold uppercase tracking-wide text-slate-500 sm:text-xs">
           Elige una alternativa
         </h3>
-        <div
-          role="radiogroup"
-          aria-label="Alternativas"
-          className="grid min-h-0 flex-1 grid-cols-1 content-start gap-2 overflow-y-auto pr-1 sm:grid-cols-2 sm:gap-3"
-        >
-          {category.alternativas.map((alt) => (
-            <AlternativeCard
-              key={alt}
-              alternativa={alt}
-              icono={category.icono}
-              descripcion={justificacionDeAlternativa(category.categoria, alt)}
-              seleccionada={alternativa === alt}
-              onSelect={() => setAlternativa(alt)}
-            />
-          ))}
+        <div role="radiogroup" aria-label="Alternativas" className="min-h-0 flex-1 overflow-y-auto pr-1">
+          <AnimatedGroup
+            as="div"
+            asChild="div"
+            preset="slide"
+            className="grid grid-cols-1 content-start gap-2 sm:grid-cols-2 sm:gap-3"
+          >
+            {category.alternativas.map((alt) => (
+              <AlternativeCard
+                key={alt}
+                alternativa={alt}
+                icono={category.icono}
+                descripcion={justificacionDeAlternativa(category.categoria, alt)}
+                seleccionada={alternativa === alt}
+                onSelect={() => setAlternativa(alt)}
+              />
+            ))}
+          </AnimatedGroup>
         </div>
       </section>
 

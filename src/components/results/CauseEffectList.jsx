@@ -1,4 +1,4 @@
-import { INDICADOR_LABEL, INDICADOR_ICONO, TRAMO_LABEL, TRAMOS, INDICADORES } from '../../data/dimensions.js'
+import { INDICADOR_CORTO, INDICADOR_ICONO, TRAMO_LABEL, TRAMOS, INDICADORES } from '../../data/dimensions.js'
 import { sourceById } from '../../data/sources.js'
 import Icon from '../ui/Icon.jsx'
 
@@ -15,52 +15,58 @@ function efectoPrincipal(efectos) {
 }
 
 /**
- * Explicación causa-efecto por decisión, con justificación, propagación y fuentes.
- * @param {{detalles:Array<Object>}} props
+ * Explicación causa-efecto por decisión (rejilla fluida y compacta).
  */
-export default function CauseEffectList({ detalles }) {
+export default function CauseEffectList({ detalles, titulo = '¿Por qué cambió tu cuenca?' }) {
   if (!detalles?.length) {
     return <p className="text-slate-600">Aún no hay decisiones registradas.</p>
   }
   return (
-    <section aria-label="Explicación causa-efecto" className="space-y-4">
-      <h2 className="flex items-center gap-2 text-2xl font-extrabold text-slate-800">
-        <Icon name="libro" className="h-6 w-6 text-agua-700" />
-        ¿Por qué cambió tu cuenca?
-      </h2>
-      <ul className="space-y-3">
-        {detalles.map((det) => {
+    <section aria-label="Explicación causa-efecto" className="flex h-full min-h-0 flex-col gap-2">
+      {titulo ? (
+        <h2 className="flex shrink-0 items-center gap-2 text-lg font-extrabold text-slate-800 sm:text-xl">
+          <Icon name="libro" className="h-5 w-5 text-agua-700" />
+          {titulo}
+        </h2>
+      ) : null}
+      <ul className="grid min-h-0 flex-1 grid-cols-1 content-start gap-2 overflow-hidden sm:grid-cols-2 xl:grid-cols-3">
+        {detalles.map((det, i) => {
           const principal = efectoPrincipal(det.efectos)
           const signo = principal.valor >= 0 ? 'beneficio' : 'presión'
           return (
-            <li key={det.id} className="rounded-2xl border border-tierra-200 bg-white p-4">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <p className="font-bold text-slate-800">
-                  <span className="mr-2 rounded-lg bg-agua-100 px-2 py-0.5 text-xs font-bold text-agua-800">{det.id}</span>
+            <li
+              key={det.id}
+              className="rounded-xl border border-tierra-200 bg-white p-2.5 animate-fade-up"
+              style={{ animationDelay: `${i * 45}ms` }}
+            >
+              <div className="flex items-start justify-between gap-2">
+                <p className="text-sm font-bold leading-tight text-slate-800">
+                  <span className="mr-1.5 rounded bg-agua-100 px-1.5 py-0.5 text-[10px] font-bold text-agua-800">
+                    {det.id}
+                  </span>
                   {det.alternativa}
                 </p>
-                <span className="rounded-full bg-tierra-100 px-2.5 py-0.5 text-xs font-semibold text-tierra-800">
-                  en {TRAMO_LABEL[det.ubicacion]}
+                <span className="shrink-0 rounded-full bg-tierra-100 px-2 py-0.5 text-[10px] font-semibold text-tierra-800">
+                  {TRAMO_LABEL[det.ubicacion]}
                 </span>
               </div>
-              <p className="mt-2 text-sm text-slate-700">{det.justificacion}</p>
-              <p className="mt-2 flex items-start gap-2 text-sm text-slate-600">
-                <Icon name={INDICADOR_ICONO[principal.ind]} className="mt-0.5 h-4 w-4 shrink-0 text-agua-600" />
+              <p className="mt-1 text-[11px] leading-tight text-slate-600">{det.justificacion}</p>
+              <p className="mt-1 flex items-start gap-1 text-[11px] leading-tight text-slate-600">
+                <Icon name={INDICADOR_ICONO[principal.ind]} className="mt-0.5 h-3 w-3 shrink-0 text-agua-600" />
                 <span>
-                  Efecto principal ({signo}): <strong>{INDICADOR_LABEL[principal.ind]}</strong> en{' '}
+                  Efecto principal ({signo}): <strong>{INDICADOR_CORTO[principal.ind]}</strong> en{' '}
                   {TRAMO_LABEL[principal.tramo]} ({principal.valor > 0 ? '+' : ''}
                   {principal.valor}).
                 </span>
               </p>
-              <p className="mt-2 rounded-xl bg-tierra-50 p-3 text-xs text-slate-600">
-                <strong>Regla de propagación:</strong> {det.reglaPropagacion}
+              <p className="mt-1 hidden text-[10px] leading-tight text-slate-500 sm:block">
+                <strong>Propagación:</strong> {det.reglaPropagacion}
               </p>
               {det.fuentesIds?.length ? (
-                <p className="mt-2 text-xs text-slate-500">
-                  Fuentes:{' '}
-                  {det.fuentesIds.map((fid, i) => (
+                <p className="mt-0.5 hidden text-[10px] text-slate-400 sm:block">
+                  {det.fuentesIds.map((fid, k) => (
                     <span key={fid}>
-                      {i > 0 ? ', ' : ''}
+                      {k > 0 ? ' · ' : ''}
                       <a
                         href={sourceById[fid]?.url}
                         target="_blank"

@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion'
 import Button from '../components/ui/Button.jsx'
 import Icon from '../components/ui/Icon.jsx'
 
@@ -17,45 +18,51 @@ export default function ReflectionPage({ sim, onNavigate }) {
   const { reiniciar } = sim
 
   return (
-    <div className="space-y-8">
-      <header className="text-center">
-        <h1 className="text-4xl font-black text-agua-900 sm:text-5xl">¿Para quién es el agua?</h1>
-        <p className="mx-auto mt-3 max-w-2xl text-slate-700">
+    <div className="flex h-full min-h-0 flex-col gap-3">
+      <header className="shrink-0 text-center">
+        <h1 className="text-[clamp(1.5rem,4vw,2.5rem)] font-black text-agua-900">¿Para quién es el agua?</h1>
+        <p className="mx-auto mt-1 max-w-2xl text-xs text-slate-700 sm:text-sm">
           El agua conecta todo el territorio. Cada decisión tomada en una parte de la cuenca puede
           afectar a quienes se encuentran aguas abajo.
         </p>
       </header>
 
-      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {DESTINATARIOS.map((d) => (
-          <div key={d.titulo} className="rounded-2xl border border-tierra-200 bg-white p-5">
-            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-agua-50 text-agua-700">
-              <Icon name={d.icono} className="h-6 w-6" />
+      <section className="grid min-h-0 flex-1 grid-cols-1 content-center gap-2 sm:grid-cols-2 lg:grid-cols-3">
+        {DESTINATARIOS.map((d, i) => (
+          <motion.div
+            key={d.titulo}
+            className="flex items-start gap-3 rounded-2xl border border-tierra-200 bg-white p-3"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.05, type: 'spring', stiffness: 300, damping: 28 }}
+          >
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-agua-50 text-agua-700">
+              <Icon name={d.icono} className="h-5 w-5" />
             </span>
-            <h2 className="mt-3 font-bold text-slate-800">{d.titulo}</h2>
-            <p className="mt-1 text-sm text-slate-600">{d.texto}</p>
-          </div>
+            <span className="min-w-0">
+              <span className="block text-sm font-bold leading-tight text-slate-800">{d.titulo}</span>
+              <span className="mt-0.5 block text-xs leading-tight text-slate-600">{d.texto}</span>
+            </span>
+          </motion.div>
         ))}
       </section>
 
-      <blockquote className="rounded-3xl border border-agua-200 bg-agua-50 p-6 text-center text-lg font-semibold italic text-agua-900">
-        Una cuenca está conectada.
-        <br />
-        Lo que ocurre aguas arriba puede transformar lo que sucede aguas abajo.
-        <br />
-        Cuidar el agua significa comprender esas conexiones.
+      <blockquote className="shrink-0 rounded-2xl border border-agua-200 bg-agua-50 p-3 text-center text-xs font-semibold italic text-agua-900 sm:text-sm">
+        Una cuenca está conectada. Lo que ocurre aguas arriba puede transformar lo que sucede aguas
+        abajo. Cuidar el agua significa comprender esas conexiones.
       </blockquote>
 
-      <div className="flex flex-wrap items-center justify-center gap-3">
-        <Button variant="secundario" onClick={() => onNavigate('stress')}>
+      <div className="flex shrink-0 flex-wrap items-center justify-center gap-2">
+        <Button size="sm" variant="secundario" onClick={() => onNavigate('stress')}>
           <Icon name="flecha_izq" className="h-4 w-4" />
-          Volver a la prueba de estrés
+          Estrés
         </Button>
-        <Button onClick={() => onNavigate('compare')}>
+        <Button size="sm" onClick={() => onNavigate('compare')}>
           <Icon name="comparar" className="h-4 w-4" />
           Comparar escenarios
         </Button>
         <Button
+          size="sm"
           variant="bosque"
           onClick={() => {
             reiniciar()
@@ -66,6 +73,7 @@ export default function ReflectionPage({ sim, onNavigate }) {
           Probar otra cuenca
         </Button>
         <Button
+          size="sm"
           variant="peligro"
           onClick={() => {
             reiniciar()
@@ -73,7 +81,7 @@ export default function ReflectionPage({ sim, onNavigate }) {
           }}
         >
           <Icon name="reiniciar" className="h-4 w-4" />
-          Reiniciar cuenca
+          Reiniciar
         </Button>
       </div>
     </div>

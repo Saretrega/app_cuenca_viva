@@ -1,27 +1,9 @@
 import Icon from '../ui/Icon.jsx'
 
 const OPCIONES = [
-  {
-    id: 'alta',
-    label: 'Cuenca Alta',
-    desc: 'Nacimientos, montañas y bosque. Lo que pasa aquí viaja aguas abajo.',
-    icono: 'montana',
-    color: 'bosque',
-  },
-  {
-    id: 'media',
-    label: 'Cuenca Media',
-    desc: 'Valles, cultivos y comunidades. Zona de tránsito y transformación.',
-    icono: 'cultivo',
-    color: 'tierra',
-  },
-  {
-    id: 'baja',
-    label: 'Cuenca Baja',
-    desc: 'Planicie y desembocadura. Recibe todo lo acumulado aguas arriba.',
-    icono: 'agua',
-    color: 'agua',
-  },
+  { id: 'alta', label: 'Cuenca Alta', desc: 'Nacimientos, montañas y bosque.', icono: 'montana', color: 'bosque' },
+  { id: 'media', label: 'Cuenca Media', desc: 'Valles, cultivos y comunidades.', icono: 'cultivo', color: 'tierra' },
+  { id: 'baja', label: 'Cuenca Baja', desc: 'Planicie y desembocadura.', icono: 'agua', color: 'agua' },
 ]
 
 const COLORES = {
@@ -35,7 +17,7 @@ const COLORES = {
  */
 export default function LocationPicker({ ubicacion, onSelect }) {
   return (
-    <div role="radiogroup" aria-label="Tramo donde ocurre la decisión" className="grid gap-3 sm:grid-cols-3">
+    <div role="radiogroup" aria-label="Tramo donde ocurre la decisión" className="grid grid-cols-3 gap-2 sm:gap-3">
       {OPCIONES.map((op) => {
         const activa = ubicacion === op.id
         return (
@@ -45,15 +27,17 @@ export default function LocationPicker({ ubicacion, onSelect }) {
             role="radio"
             aria-checked={activa}
             onClick={() => onSelect(op.id)}
-            className={`rounded-2xl border-2 p-4 text-left transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-agua-600 ${
-              activa ? `${COLORES[op.color]} shadow-md ring-2 ring-offset-1` : 'border-tierra-200 bg-white hover:bg-tierra-50'
+            className={`flex flex-col items-start gap-2 rounded-2xl border-2 p-2.5 text-left transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.97] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-agua-600 sm:p-3 ${
+              activa ? `${COLORES[op.color]} shadow-md` : 'border-tierra-200 bg-white hover:bg-tierra-50'
             }`}
           >
-            <span className="flex items-center gap-2 font-bold">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/70">
               <Icon name={op.icono} className="h-5 w-5" />
-              {op.label}
             </span>
-            <span className="mt-1 block text-sm text-slate-600">{op.desc}</span>
+            <span className="min-w-0">
+              <span className="block text-xs font-bold sm:text-base">{op.label}</span>
+              <span className="mt-0.5 hidden text-[11px] leading-tight text-slate-600 sm:block">{op.desc}</span>
+            </span>
           </button>
         )
       })}

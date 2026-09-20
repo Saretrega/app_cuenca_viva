@@ -16,7 +16,6 @@ export function useWatershedSimulator() {
   const [currentStep, setCurrentStep] = useLocalStorage('cuencaViva.step', 0)
   const [stressId, setStressId] = useLocalStorage('cuencaViva.stress', null)
   const [savedScenarios, setSavedScenarios] = useLocalStorage('cuencaViva.scenarios', { A: null, B: null })
-  const [presentationMode, setPresentationMode] = useLocalStorage('cuencaViva.presentation', false)
 
   const selecciones = useMemo(() => Object.values(decisions).filter(Boolean), [decisions])
 
@@ -105,8 +104,6 @@ export function useWatershedSimulator() {
     guardarEscenario,
     cargarEscenario,
     borrarEscenario,
-    presentationMode,
-    setPresentationMode,
     setDecision,
     removeDecision,
     reiniciar,

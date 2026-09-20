@@ -25,6 +25,19 @@ export const INDICADOR_LABEL = {
   resiliencia: 'Resiliencia y estabilidad',
 }
 
+export const INDICADOR_CORTO = {
+  calidadAgua: 'Calidad',
+  disponibilidad: 'Disponibilidad',
+  biodiversidad: 'Biodiversidad',
+  resiliencia: 'Resiliencia',
+}
+
+export const COLOR_TRAMO = {
+  alta: '#16a34a',
+  media: '#a9743c',
+  baja: '#0f68cd',
+}
+
 export const INDICADOR_ICONO = {
   calidadAgua: 'agua',
   disponibilidad: 'gota',

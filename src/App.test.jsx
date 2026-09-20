@@ -4,11 +4,51 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import App from './App.jsx'
 import { categories } from './data/categories.js'
 
-function elegirAlternativaYUbicacion(alternativa) {
+// jsdom no implementa canvas ni el motor de animación: se mockean las capas pesadas.
+vi.mock('framer-motion', async () => {
+  const React = await import('react')
+  const make = (tag) => (props) => {
+    const {
+      children,
+      initial: _initial,
+      animate: _animate,
+      exit: _exit,
+      transition: _transition,
+      variants: _variants,
+      whileHover: _whileHover,
+      whileTap: _whileTap,
+      layout: _layout,
+      custom: _custom,
+      ...rest
+    } = props
+    return React.createElement(tag, rest, children)
+  }
+  const cache = {}
+  const motion = new Proxy(
+    {},
+    {
+      get: (_t, tag) => {
+        if (!cache[tag]) cache[tag] = make(tag)
+        return cache[tag]
+      },
+    },
+  )
+  return {
+    motion,
+    AnimatePresence: ({ children }) => children,
+    useReducedMotion: () => false,
+  }
+})
+vi.mock('./components/charts/LazyWatershedChart.jsx', () => ({ default: () => null }))
+vi.mock('./components/media/LazyParticles.jsx', () => ({ default: () => null }))
+vi.mock('./components/media/LottieIcon.jsx', () => ({ default: () => null }))
+
+function decidir(alternativa) {
   fireEvent.click(screen.getByText(alternativa).closest('button'))
   fireEvent.click(screen.getByText('Cuenca Alta').closest('button'))
-  fireEvent.click(screen.getByText('Confirmar decisión'))
   fireEvent.click(screen.getByText('Continuar'))
+  // La ilustración animada se salta tocando la pantalla.
+  fireEvent.click(screen.getByLabelText('Saltar la animación y continuar'))
 }
 
 describe('App · flujo completo del simulador', () => {
@@ -28,47 +68,41 @@ describe('App · flujo completo del simulador', () => {
     window.localStorage.clear()
   })
 
-  it('recorre las 7 decisiones, resultados y estrés sin errores de consola', () => {
+  it('recorre las 7 decisiones, el resumen final y el estrés', () => {
     render(<App />)
 
     expect(screen.getAllByText('CUENCA VIVA').length).toBeGreaterThan(0)
     fireEvent.click(screen.getByText('Comenzar simulación'))
 
-    for (let i = 0; i < categories.length - 1; i += 1) {
-      elegirAlternativaYUbicacion(categories[i].alternativas[0])
+    for (let i = 0; i < categories.length; i += 1) {
+      decidir(categories[i].alternativas[0])
     }
-    elegirAlternativaYUbicacion(categories[categories.length - 1].alternativas[0])
 
-    // Navegó a resultados
-    expect(screen.getByText('Estado de tu cuenca')).toBeTruthy()
-    expect(screen.getByText('La historia de tu cuenca')).toBeTruthy()
-    expect(screen.getByText('¿Por qué cambió tu cuenca?')).toBeTruthy()
+    // Resumen final en diapositivas
+    expect(screen.getByText('Resumen de tu cuenca')).toBeTruthy()
+    fireEvent.click(screen.getByLabelText('Ir a Historia de tu cuenca'))
+    expect(screen.getByText('Decisiones favorables')).toBeTruthy()
+    fireEvent.click(screen.getByLabelText('Ir a Causa-efecto'))
+    expect(screen.getAllByText(/Efecto principal/).length).toBeGreaterThan(0)
 
     // Prueba de estrés
     fireEvent.click(screen.getByText('Probar estrés climático'))
     expect(screen.getByText('Prueba de estrés climático')).toBeTruthy()
     fireEvent.click(screen.getByText('Sequía prolongada').closest('button'))
-    expect(screen.getByText(/Antes vs\. después/)).toBeTruthy()
+    expect(screen.getAllByText(/Antes vs\. después/).length).toBeGreaterThan(0)
 
-    // Reflexión final
-    fireEvent.click(screen.getByText('Continuar: ¿Para quién es el agua?'))
-    expect(screen.getByText('¿Para quién es el agua?')).toBeTruthy()
+    // Reflexión final (acción final de la última diapositiva de estrés)
+    fireEvent.click(screen.getByLabelText('Ir a Detalle por tramo'))
+    fireEvent.click(screen.getByText('¿Para quién es el agua?'))
+    expect(screen.getAllByText('¿Para quién es el agua?').length).toBeGreaterThan(0)
 
     // Comparación
     fireEvent.click(screen.getByText('Comparar escenarios'))
-    expect(screen.getByText('Comparar escenarios')).toBeTruthy()
-
-    // Guardar escenarios A y B y comparar
     const guardar = screen.getAllByText('Guardar')
     fireEvent.click(guardar[0])
     fireEvent.click(guardar[1])
-    expect(screen.getByText('Calidad del agua · Cuenca Alta')).toBeTruthy()
-
-    // Modo presentación
-    fireEvent.click(screen.getByText('Presentación'))
-    expect(screen.getByText('Salir de presentación')).toBeTruthy()
-    fireEvent.click(screen.getByText('Salir de presentación'))
-    expect(screen.queryByText('Salir de presentación')).toBeNull()
+    fireEvent.click(screen.getByLabelText('Ir a Comparación detallada'))
+    expect(screen.getByText('Calidad · Cuenca Alta')).toBeTruthy()
 
     expect(errores).toEqual([])
   })
@@ -76,6 +110,8 @@ describe('App · flujo completo del simulador', () => {
   it('permite iniciar el flujo desde la página Cómo funciona', () => {
     render(<App />)
     fireEvent.click(screen.getAllByText('¿Cómo funciona?')[0])
+    expect(screen.getByText('Construye y transforma una cuenca')).toBeTruthy()
+    fireEvent.click(screen.getByLabelText('Ir a Las siete decisiones'))
     expect(screen.getByText('Las siete decisiones')).toBeTruthy()
     expect(errores).toEqual([])
   })

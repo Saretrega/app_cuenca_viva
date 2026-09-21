@@ -8,7 +8,7 @@ export default function WatershedStory({ narrative, titulo = true }) {
   return (
     <section
       aria-label="Historia de la cuenca"
-      className="flex h-full min-h-0 flex-col gap-2 rounded-2xl border border-agua-200 bg-agua-50/50 p-3"
+      className="flex h-full min-h-0 flex-col gap-2 overflow-y-auto rounded-2xl border border-agua-200 bg-agua-50/50 p-3 short:gap-1! short:p-2!"
     >
       {titulo ? (
         <h2 className="flex shrink-0 items-center gap-2 text-xl font-extrabold text-agua-900">
@@ -16,10 +16,10 @@ export default function WatershedStory({ narrative, titulo = true }) {
           {narrative.titulo}
         </h2>
       ) : null}
-      <p className="shrink-0 text-sm text-slate-700">{narrative.resumen}</p>
+      <p className="shrink-0 text-sm text-slate-700 short:hidden!">{narrative.resumen}</p>
 
-      <div className="grid min-h-0 flex-1 grid-cols-2 gap-3">
-        <div className="min-h-0 overflow-hidden rounded-xl bg-white/70 p-2.5">
+      <div className="grid min-h-0 flex-1 grid-cols-2 gap-3 short:gap-1.5!">
+        <div className="min-h-0 overflow-y-auto rounded-xl bg-white/70 p-2.5 short:p-1.5!">
           <h3 className="flex items-center gap-1.5 text-sm font-bold text-bosque-800">
             <Icon name="hoja" className="h-4 w-4" /> Decisiones favorables
           </h3>
@@ -33,7 +33,7 @@ export default function WatershedStory({ narrative, titulo = true }) {
             <p className="mt-1.5 text-[11px] text-slate-600">No se identificaron decisiones claramente favorables.</p>
           )}
         </div>
-        <div className="min-h-0 overflow-hidden rounded-xl bg-white/70 p-2.5">
+        <div className="min-h-0 overflow-y-auto rounded-xl bg-white/70 p-2.5 short:p-1.5!">
           <h3 className="flex items-center gap-1.5 text-sm font-bold text-deterioro-700">
             <Icon name="alerta" className="h-4 w-4" /> Principales presiones
           </h3>
@@ -49,7 +49,7 @@ export default function WatershedStory({ narrative, titulo = true }) {
         </div>
       </div>
 
-      <div className="shrink-0 rounded-xl bg-white/70 p-2.5">
+      <div className="shrink-0 rounded-xl bg-white/70 p-2.5 short:p-1.5!">
         <h3 className="flex items-center gap-1.5 text-sm font-bold text-agua-800">
           <Icon name="flecha_der" className="h-4 w-4" /> Efectos aguas abajo
         </h3>
@@ -60,7 +60,7 @@ export default function WatershedStory({ narrative, titulo = true }) {
         </ul>
       </div>
 
-      <p className="shrink-0 rounded-xl bg-white/80 p-2 text-center text-xs font-semibold italic text-agua-900">
+      <p className="shrink-0 rounded-xl bg-white/80 p-2 text-center text-xs font-semibold italic text-agua-900 short:hidden!">
         {narrative.mensaje}
       </p>
     </section>

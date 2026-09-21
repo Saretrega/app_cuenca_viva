@@ -62,7 +62,7 @@ export default function SimulationPage({ sim, onNavigate }) {
             transition={{ duration: 0.3, ease: 'easeOut' }}
             className="h-full"
           >
-            <div className="flex h-full min-h-0 flex-col gap-3">
+            <div className="flex h-full min-h-0 flex-col gap-3 short:gap-1.5!">
               <DecisionProgress paso={indice} decisions={decisions} />
               <div className="min-h-0 flex-1">
                 <DecisionStep

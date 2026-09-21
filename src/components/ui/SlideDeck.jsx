@@ -52,7 +52,7 @@ export default function SlideDeck({ slides, accionFinal = null, className = '', 
 
   return (
     <div className={`flex h-full min-h-0 flex-col ${className}`}>
-      <div className="relative min-h-0 flex-1 overflow-hidden">
+      <div className="relative min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
         <AnimatePresence mode="wait" custom={direccion} initial={false}>
           <motion.div
             key={slide.id}

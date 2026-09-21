@@ -1,5 +1,15 @@
 @import 'tailwindcss';
 
+/* Variante para viewports de poco alto (p. ej. celular en horizontal, ~350-420px de alto):
+   reduce densidad (padding/gap/tamaño de fuente) donde el alto es la restricción, no el ancho. */
+@custom-variant short (@media (max-height: 480px));
+
+:root {
+  /* Alto real del <nav> inferior, medido por JS (ResizeObserver en App.jsx);
+     este valor es solo el respaldo antes de la primera medición. */
+  --nav-height: 44px;
+}
+
 @theme {
   --font-sans: 'Segoe UI', system-ui, Roboto, sans-serif;
 

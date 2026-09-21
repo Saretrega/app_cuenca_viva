@@ -17,14 +17,17 @@ export default function ResultsPanel({ state, titulo = 'Estado de tu cuenca' }) 
           {titulo}
         </h2>
       ) : null}
-      <div className="grid min-h-0 flex-1 grid-cols-1 gap-2 md:grid-cols-3">
+      <div className="grid min-h-0 flex-1 grid-cols-1 gap-2 short:overflow-y-auto short:gap-1! md:grid-cols-3">
         {TRAMOS.map((tramo) => (
-          <div key={tramo} className="flex min-h-0 flex-col rounded-2xl border border-tierra-200 bg-tierra-50/50 p-2.5">
+          <div
+            key={tramo}
+            className="flex min-h-0 flex-col rounded-2xl border border-tierra-200 bg-tierra-50/50 p-2.5 short:p-1.5!"
+          >
             <h3 className="flex shrink-0 items-center gap-2 text-sm font-bold text-tierra-800">
               <Icon name={ICONO_TRAMO[tramo]} className="h-4 w-4" />
               {TRAMO_LABEL[tramo]}
             </h3>
-            <div className="mt-2 grid min-h-0 flex-1 content-start gap-1.5">
+            <div className="mt-2 grid min-h-0 flex-1 content-start gap-1.5 short:mt-1! short:gap-1!">
               {INDICADORES.map((ind) => (
                 <IndicatorCard key={ind} indicador={ind} clasificacion={state.clasificaciones[tramo][ind]} />
               ))}

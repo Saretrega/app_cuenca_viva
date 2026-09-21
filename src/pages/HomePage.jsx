@@ -21,39 +21,39 @@ const item = {
  */
 export default function HomePage({ onNavigate, state, decisions }) {
   return (
-    <div className="relative h-full w-full">
+    <div className="relative h-full w-full overflow-y-auto">
       <BubblesBackground />
-      <div className="relative flex h-full min-h-0 flex-col gap-4 lg:flex-row lg:items-stretch lg:gap-8">
+      <div className="relative flex h-full min-h-0 flex-col gap-4 short:flex-row! short:gap-2! lg:flex-row lg:items-stretch lg:gap-8">
         <motion.section
-          className="flex shrink-0 flex-col justify-center gap-2 lg:min-h-0 lg:flex-1"
+          className="flex shrink-0 flex-col justify-center gap-2 short:gap-1! lg:min-h-0 lg:flex-1"
           variants={contenedor}
           initial="hidden"
           animate="visible"
         >
           <motion.p
             variants={item}
-            className="inline-flex w-fit items-center gap-2 rounded-full bg-agua-100 px-3 py-1 text-xs font-semibold text-agua-800 sm:text-sm"
+            className="inline-flex w-fit items-center gap-2 rounded-full bg-agua-100 px-3 py-1 text-xs font-semibold text-agua-800 short:hidden! sm:text-sm"
           >
             <Icon name="agua" className="h-4 w-4" />
             Simulador educativo de cuencas hidrográficas
           </motion.p>
           <motion.h1
             variants={item}
-            className="text-[clamp(2rem,7vw,4.5rem)] font-black leading-none tracking-tight text-agua-900"
+            className="text-[clamp(2rem,7vw,4.5rem)] font-black leading-none tracking-tight text-agua-900 short:text-[clamp(1.3rem,5vw,2rem)]!"
           >
             CUENCA VIVA
           </motion.h1>
           <motion.p
             variants={item}
-            className="text-[clamp(1rem,2.4vw,1.6rem)] font-semibold text-bosque-700"
+            className="text-[clamp(1rem,2.4vw,1.6rem)] font-semibold text-bosque-700 short:text-[clamp(0.8rem,2vw,1rem)]!"
           >
             Cada decisión deja huella en el agua.
           </motion.p>
-          <motion.p variants={item} className="max-w-2xl text-sm text-slate-700 sm:text-base">
+          <motion.p variants={item} className="max-w-2xl text-sm text-slate-700 short:hidden! sm:text-base">
             Construye una cuenca, toma decisiones y descubre cómo nuestras acciones pueden transformar
             el agua, la biodiversidad y la capacidad del territorio para enfrentar eventos extremos.
           </motion.p>
-          <motion.div variants={item} className="mt-1 flex flex-wrap items-center gap-2 sm:gap-3">
+          <motion.div variants={item} className="mt-1 flex flex-wrap items-center gap-2 short:mt-0! short:gap-1.5! sm:gap-3">
             <Button size="md" onClick={() => onNavigate('simulation')}>
               <Icon name="jugar" className="h-5 w-5" />
               Comenzar simulación
@@ -67,9 +67,9 @@ export default function HomePage({ onNavigate, state, decisions }) {
               Ciencia
             </Button>
           </motion.div>
-          <motion.div variants={item} className="mt-2 grid grid-cols-3 gap-2">
+          <motion.div variants={item} className="mt-2 grid grid-cols-3 gap-2 short:mt-1! short:gap-1!">
             {TRAMOS_INFO.map((c) => (
-              <div key={c.titulo} className="rounded-2xl border border-tierra-200 bg-white/80 p-2 sm:p-3">
+              <div key={c.titulo} className="rounded-2xl border border-tierra-200 bg-white/80 p-2 short:p-1.5! sm:p-3">
                 <span className="flex items-center gap-1.5 text-xs font-bold text-slate-800 sm:text-sm">
                   <Icon name={c.icono} className="h-4 w-4 shrink-0 text-agua-700" />
                   <span className="truncate">{c.titulo}</span>
@@ -86,7 +86,7 @@ export default function HomePage({ onNavigate, state, decisions }) {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ type: 'spring', stiffness: 220, damping: 28 }}
         >
-          <div className="h-full min-h-[150px] w-full overflow-hidden rounded-3xl border border-tierra-200 bg-white/70 shadow-sm">
+          <div className="h-full min-h-30 w-full overflow-hidden rounded-3xl border border-tierra-200 bg-white/70 shadow-sm">
             <WatershedLandscape decisions={decisions} state={state} className="h-full w-full" />
           </div>
         </motion.section>

@@ -50,9 +50,9 @@ export default function ResultsPage({ sim, onNavigate }) {
   ]
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-2">
+    <div className="flex h-full min-h-0 flex-col gap-2 short:gap-1!">
       <header className="flex shrink-0 flex-wrap items-center justify-between gap-2">
-        <h1 className="flex items-center gap-2 text-lg font-black text-agua-900 sm:text-2xl">
+        <h1 className="flex items-center gap-2 text-lg font-black text-agua-900 short:text-base! sm:text-2xl">
           <Icon name="medir" className="h-6 w-6" />
           Resumen de tu cuenca
         </h1>

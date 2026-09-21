@@ -9,7 +9,7 @@ export default function DecisionProgress({ paso, decisions }) {
   const porcentaje = Math.round((completadas / total) * 100)
 
   return (
-    <div className="flex shrink-0 items-center gap-3 rounded-xl border border-tierra-200 bg-white/90 px-4 py-2">
+    <div className="flex shrink-0 items-center gap-3 rounded-xl border border-tierra-200 bg-white/90 px-4 py-2 short:px-2! short:py-1!">
       <p className="whitespace-nowrap text-sm font-bold uppercase tracking-wide text-agua-800">
         Decisión {Math.min(paso + 1, total)} de {total}
       </p>

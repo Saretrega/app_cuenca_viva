@@ -29,14 +29,14 @@ export default function CauseEffectList({ detalles, titulo = '¿Por qué cambió
           {titulo}
         </h2>
       ) : null}
-      <ul className="grid min-h-0 flex-1 grid-cols-1 content-start gap-2 overflow-hidden sm:grid-cols-2 xl:grid-cols-3">
+      <ul className="grid min-h-0 flex-1 grid-cols-1 content-start gap-2 overflow-y-auto short:gap-1! sm:grid-cols-2 xl:grid-cols-3">
         {detalles.map((det, i) => {
           const principal = efectoPrincipal(det.efectos)
           const signo = principal.valor >= 0 ? 'beneficio' : 'presión'
           return (
             <li
               key={det.id}
-              className="rounded-xl border border-tierra-200 bg-white p-2.5 animate-fade-up"
+              className="rounded-xl border border-tierra-200 bg-white p-2.5 short:p-1.5! animate-fade-up"
               style={{ animationDelay: `${i * 45}ms` }}
             >
               <div className="flex items-start justify-between gap-2">
@@ -59,11 +59,11 @@ export default function CauseEffectList({ detalles, titulo = '¿Por qué cambió
                   {principal.valor}).
                 </span>
               </p>
-              <p className="mt-1 hidden text-[10px] leading-tight text-slate-500 sm:block">
+              <p className="mt-1 hidden text-[10px] leading-tight text-slate-500 short:hidden! sm:block">
                 <strong>Propagación:</strong> {det.reglaPropagacion}
               </p>
               {det.fuentesIds?.length ? (
-                <p className="mt-0.5 hidden text-[10px] text-slate-400 sm:block">
+                <p className="mt-0.5 hidden text-[10px] text-slate-400 short:hidden! sm:block">
                   {det.fuentesIds.map((fid, k) => (
                     <span key={fid}>
                       {k > 0 ? ' · ' : ''}

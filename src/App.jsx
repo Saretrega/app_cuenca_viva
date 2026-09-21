@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { AnimatePresence, MotionConfig, motion } from 'motion/react'
 import useWatershedSimulator from './hooks/useWatershedSimulator.js'
 import useMobileLandscapeMode from './hooks/useMobileLandscapeMode.js'
@@ -49,6 +49,21 @@ export default function App() {
   const { aplicarEscenario } = sim
   const { rotacionForzada, activarModoInmersivo, mostrarAvisoInicio, descartarAviso } = useMobileLandscapeMode()
   const [page, setPage] = useState('home')
+  const wrapperRef = useRef(null)
+  const navRef = useRef(null)
+
+  // Alto real del nav (varía si el texto se oculta en pantallas angostas o cambia el wrap):
+  // se expone como --nav-height para que el padding-bottom de <main> reserve el espacio exacto.
+  useLayoutEffect(() => {
+    const wrapper = wrapperRef.current
+    const nav = navRef.current
+    if (!wrapper || !nav || typeof ResizeObserver === 'undefined') return undefined
+    const actualizar = () => wrapper.style.setProperty('--nav-height', `${nav.offsetHeight}px`)
+    actualizar()
+    const observer = new ResizeObserver(actualizar)
+    observer.observe(nav)
+    return () => observer.disconnect()
+  }, [])
 
   const navigate = useCallback(
     (destino) => {
@@ -74,6 +89,7 @@ export default function App() {
   return (
     <MotionConfig reducedMotion="user">
       <div
+        ref={wrapperRef}
         className={`relative flex h-dvh w-full flex-col overflow-hidden ${rotacionForzada ? 'cv-rotar-horizontal' : ''}`}
       >
         {mostrarAvisoInicio ? <AvisoAgregarInicio onDescartar={descartarAviso} /> : null}
@@ -85,6 +101,7 @@ export default function App() {
         </a>
 
         <nav
+          ref={navRef}
           aria-label="Navegación principal"
           className="absolute bottom-[calc(0.5rem+env(safe-area-inset-bottom,0px))] left-1/2 z-40 flex -translate-x-1/2 items-center gap-0.5 rounded-full border border-tierra-200 bg-white/80 p-1 shadow-sm backdrop-blur sm:bottom-[calc(0.75rem+env(safe-area-inset-bottom,0px))]"
         >
@@ -107,7 +124,7 @@ export default function App() {
 
         <main
           id="contenido"
-          className="relative min-h-0 flex-1 overflow-hidden px-2 pt-2 pb-[calc(3rem+env(safe-area-inset-bottom,0px))] sm:px-3 sm:pt-3 sm:pb-[calc(3.5rem+env(safe-area-inset-bottom,0px))]"
+          className="relative min-h-0 flex-1 overflow-hidden px-2 pt-2 pb-[calc(var(--nav-height)+1rem+env(safe-area-inset-bottom,0px))] sm:px-3 sm:pt-3 sm:pb-[calc(var(--nav-height)+1.25rem+env(safe-area-inset-bottom,0px))]"
         >
           <AnimatePresence mode="wait">
             <motion.div

@@ -18,16 +18,18 @@ export default function ReflectionPage({ sim, onNavigate }) {
   const { reiniciar } = sim
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-3">
+    <div className="flex h-full min-h-0 flex-col gap-3 overflow-y-auto short:gap-1.5!">
       <header className="shrink-0 text-center">
-        <h1 className="text-[clamp(1.5rem,4vw,2.5rem)] font-black text-agua-900">¿Para quién es el agua?</h1>
-        <p className="mx-auto mt-1 max-w-2xl text-xs text-slate-700 sm:text-sm">
+        <h1 className="text-[clamp(1.5rem,4vw,2.5rem)] font-black text-agua-900 short:text-[clamp(1.1rem,3.5vw,1.5rem)]!">
+          ¿Para quién es el agua?
+        </h1>
+        <p className="mx-auto mt-1 max-w-2xl text-xs text-slate-700 short:hidden! sm:text-sm">
           El agua conecta todo el territorio. Cada decisión tomada en una parte de la cuenca puede
           afectar a quienes se encuentran aguas abajo.
         </p>
       </header>
 
-      <section className="grid min-h-0 flex-1 grid-cols-1 content-center gap-2 sm:grid-cols-2 lg:grid-cols-3">
+      <section className="grid min-h-0 flex-1 grid-cols-1 content-center gap-2 short:grid-cols-3! short:gap-1.5! sm:grid-cols-2 lg:grid-cols-3">
         {DESTINATARIOS.map((d, i) => (
           <motion.div
             key={d.titulo}
@@ -47,7 +49,7 @@ export default function ReflectionPage({ sim, onNavigate }) {
         ))}
       </section>
 
-      <blockquote className="shrink-0 rounded-2xl border border-agua-200 bg-agua-50 p-3 text-center text-xs font-semibold italic text-agua-900 sm:text-sm">
+      <blockquote className="shrink-0 rounded-2xl border border-agua-200 bg-agua-50 p-3 text-center text-xs font-semibold italic text-agua-900 short:hidden! sm:text-sm">
         Una cuenca está conectada. Lo que ocurre aguas arriba puede transformar lo que sucede aguas
         abajo. Cuidar el agua significa comprender esas conexiones.
       </blockquote>

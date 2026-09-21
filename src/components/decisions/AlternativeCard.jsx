@@ -10,7 +10,7 @@ export default function AlternativeCard({ alternativa, descripcion, seleccionada
       role="radio"
       aria-checked={seleccionada}
       onClick={onSelect}
-      className={`flex w-full transform-gpu items-start gap-3 rounded-2xl border p-3 text-left transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-agua-600 sm:p-4 ${
+      className={`flex w-full transform-gpu items-start gap-3 rounded-2xl border p-3 text-left transition-all duration-200 short:gap-2! short:p-2! hover:-translate-y-0.5 active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-agua-600 sm:p-4 ${
         seleccionada
           ? 'border-agua-500 bg-agua-50 shadow-md ring-2 ring-agua-300'
           : 'border-tierra-200 bg-white hover:border-agua-300 hover:bg-agua-50/40'

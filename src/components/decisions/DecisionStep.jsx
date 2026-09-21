@@ -18,21 +18,21 @@ export default function DecisionStep({ category, decision, paso, total, onContin
   const listo = Boolean(alternativa && ubicacion)
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-3 overflow-hidden rounded-3xl border border-tierra-200 bg-white p-3 shadow-lg sm:gap-4 sm:p-5 lg:p-6">
+    <div className="flex h-full min-h-0 flex-col gap-3 overflow-y-auto rounded-3xl border border-tierra-200 bg-white p-3 shadow-lg short:gap-1.5! short:p-2! sm:gap-4 sm:p-5 lg:p-6">
       <header className="shrink-0">
         <p className="text-[11px] font-bold uppercase tracking-widest text-agua-700 sm:text-xs">
           Decisión {paso + 1} de {total}
         </p>
         <h2
           id={`decision-${paso}`}
-          className="mt-1 flex items-center gap-2 text-[clamp(1.05rem,2.6vw,1.75rem)] font-extrabold leading-tight text-slate-800 sm:gap-3"
+          className="mt-1 flex items-center gap-2 text-[clamp(1.05rem,2.6vw,1.75rem)] font-extrabold leading-tight text-slate-800 short:text-[clamp(0.95rem,2.2vw,1.2rem)]! short:mt-0! sm:gap-3"
         >
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-agua-100 text-agua-700 sm:h-11 sm:w-11">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-agua-100 text-agua-700 short:h-8! short:w-8! sm:h-11 sm:w-11">
             <Icon name={category.icono} className="h-5 w-5 sm:h-6 sm:w-6" />
           </span>
           {category.categoria.replace(/^\d+\.\s*/, '')}
         </h2>
-        <p className="mt-0.5 text-xs text-slate-600 sm:text-sm">{category.eje}</p>
+        <p className="mt-0.5 text-xs text-slate-600 short:hidden! sm:text-sm">{category.eje}</p>
       </header>
 
       <section className="flex min-h-0 flex-1 flex-col gap-2">
@@ -60,14 +60,14 @@ export default function DecisionStep({ category, decision, paso, total, onContin
         </div>
       </section>
 
-      <section className="flex shrink-0 flex-col gap-2">
+      <section className="flex shrink-0 flex-col gap-2 short:gap-1!">
         <h3 className="text-[11px] font-bold uppercase tracking-wide text-slate-500 sm:text-xs">
           ¿Dónde ocurre esta decisión?
         </h3>
         <LocationPicker ubicacion={ubicacion} onSelect={setUbicacion} />
       </section>
 
-      <footer className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-t border-tierra-100 pt-3">
+      <footer className="sticky bottom-0 flex shrink-0 flex-wrap items-center justify-between gap-2 border-t border-tierra-100 bg-white pt-3 short:pt-1.5!">
         <Button variant="fantasma" size="sm" onClick={onBack}>
           <Icon name="flecha_izq" className="h-4 w-4" />
           {paso === 0 ? 'Inicio' : 'Anterior'}

@@ -21,14 +21,14 @@ export default function ResultsPage({ sim, onNavigate }) {
       titulo: 'Tu cuenca',
       contenido: (
         <div className="flex h-full min-h-0 flex-col gap-3 lg:flex-row">
-          <div className="min-h-0 flex-1 overflow-hidden rounded-2xl border border-tierra-200 bg-white/70 shadow-sm">
+          <div className="min-h-0 flex-1 overflow-hidden rounded-2xl border border-tierra-200 bg-white/70 shadow-sm vertical:h-[32vh]! vertical:flex-none!">
             <WatershedLandscape decisions={decisions} state={state} className="h-full w-full" />
           </div>
           <div className="flex min-h-0 flex-1 flex-col gap-2 rounded-2xl border border-tierra-200 bg-white p-2">
             <h3 className="shrink-0 text-sm font-bold text-slate-700">
               Puntajes acumulados por indicador y tramo
             </h3>
-            <div className="min-h-0 flex-1">
+            <div className="min-h-0 flex-1 vertical:h-[28vh]! vertical:flex-none!">
               <LazyWatershedChart
                 altura="100%"
                 etiquetas={INDICADORES.map((i) => INDICADOR_CORTO[i])}

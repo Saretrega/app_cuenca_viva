@@ -23,11 +23,12 @@ function esPortrait() {
 }
 
 /**
- * Mejora progresiva para móviles: intenta pantalla completa + orientación horizontal
- * nativas en el primer toque del usuario (requisito de los navegadores para estas APIs),
- * con una rotación visual por CSS como respaldo donde no existan o fallen (p. ej. iOS Safari),
- * y un aviso descartable para sugerir "Agregar a inicio" en iOS cuando aplica.
- * Nunca bloquea el uso de la app si algo no está soportado o el usuario lo rechaza.
+ * Modo inmersivo horizontal, siempre opt-in: solo se activa cuando el usuario presiona
+ * el botón correspondiente (los navegadores exigen un gesto directo para fullscreen/lock).
+ * Intenta pantalla completa + orientación horizontal nativas, con una rotación visual
+ * por CSS como respaldo donde no existan o fallen (p. ej. iOS Safari), y un aviso
+ * descartable sugiriendo "Agregar a inicio" en iOS cuando corresponde.
+ * En vertical (sin activar), la app funciona como una página normal, sin nada forzado.
  */
 export function useMobileLandscapeMode() {
   const esMovil = useMemo(() => detectarMovil(), [])
@@ -64,10 +65,28 @@ export function useMobileLandscapeMode() {
   }, [esMovil, activo])
 
   const rotacionForzada = activo && esMovil && portrait
-  const mostrarAvisoInicio = esMovil && esIOS && !esStandalone() && !avisoDescartado
+  // El aviso de "Agregar a inicio" solo tiene sentido una vez que el usuario pidió
+  // el modo inmersivo y iOS no puede dárselo (no antes: sería un aviso no solicitado).
+  const mostrarAvisoInicio = esMovil && esIOS && activo && !esStandalone() && !avisoDescartado
   const descartarAviso = useCallback(() => setAvisoDescartado(true), [setAvisoDescartado])
 
-  return { esMovil, esIOS, rotacionForzada, activarModoInmersivo, mostrarAvisoInicio, descartarAviso }
+  // "Vertical normal": el dispositivo está en portrait y el usuario NO activó el modo
+  // inmersivo horizontal (ni con lock nativo ni con el respaldo de rotación CSS).
+  // App.jsx usa esto para marcar el layout normal de página con scroll, distinto del
+  // modo de rotación forzada (que necesita alturas fijas, no un layout que crece con el contenido).
+  const modoVerticalNormal = portrait && !rotacionForzada
+
+  return {
+    esMovil,
+    esIOS,
+    activo,
+    portrait,
+    rotacionForzada,
+    modoVerticalNormal,
+    activarModoInmersivo,
+    mostrarAvisoInicio,
+    descartarAviso,
+  }
 }
 
 export default useMobileLandscapeMode

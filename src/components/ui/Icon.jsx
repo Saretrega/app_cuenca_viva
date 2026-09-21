@@ -15,6 +15,7 @@ import {
   Heart,
   House,
   Leaf,
+  Maximize,
   Mountain,
   Pickaxe,
   Play,
@@ -63,6 +64,7 @@ const LUCIDE = {
   corazon: Heart,
   fabrica: Factory,
   medir: Gauge,
+  expandir: Maximize,
 }
 
 // Íconos propios que Lucide no cubre.

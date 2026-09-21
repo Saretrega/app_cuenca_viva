@@ -67,21 +67,21 @@ export default function HomePage({ onNavigate, state, decisions }) {
               Ciencia
             </Button>
           </motion.div>
-          <motion.div variants={item} className="mt-2 grid grid-cols-3 gap-2 short:mt-1! short:gap-1!">
+          <motion.div variants={item} className="mt-2 grid grid-cols-1 gap-2 short:mt-1! short:gap-1! sm:grid-cols-3">
             {TRAMOS_INFO.map((c) => (
               <div key={c.titulo} className="rounded-2xl border border-tierra-200 bg-white/80 p-2 short:p-1.5! sm:p-3">
                 <span className="flex items-center gap-1.5 text-xs font-bold text-slate-800 sm:text-sm">
                   <Icon name={c.icono} className="h-4 w-4 shrink-0 text-agua-700" />
                   <span className="truncate">{c.titulo}</span>
                 </span>
-                <p className="mt-0.5 hidden text-[11px] text-slate-600 sm:block">{c.texto}</p>
+                <p className="mt-0.5 block text-[11px] text-slate-600">{c.texto}</p>
               </div>
             ))}
           </motion.div>
         </motion.section>
 
         <motion.section
-          className="min-h-0 flex-1 lg:flex-1"
+          className="min-h-0 flex-1 vertical:h-[38vh]! vertical:flex-none! lg:flex-1"
           initial={{ opacity: 0, scale: 0.97 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ type: 'spring', stiffness: 220, damping: 28 }}

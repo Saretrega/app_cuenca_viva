@@ -44,7 +44,7 @@ export default function StressPage({ sim, onNavigate }) {
                   ))}
                 </div>
               </div>
-              <div className="min-h-0 flex-1 rounded-2xl border border-tierra-200 bg-white p-2">
+              <div className="min-h-0 flex-1 rounded-2xl border border-tierra-200 bg-white p-2 vertical:h-[28vh]! vertical:flex-none!">
                 <LazyWatershedChart
                   altura="100%"
                   etiquetas={INDICADORES.map((i) => INDICADOR_CORTO[i])}
@@ -141,7 +141,7 @@ export default function StressPage({ sim, onNavigate }) {
       </div>
 
       <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
-        <div className="min-h-0 overflow-hidden rounded-2xl border border-tierra-200 bg-white/70 shadow-sm">
+        <div className="min-h-0 overflow-hidden rounded-2xl border border-tierra-200 bg-white/70 shadow-sm vertical:h-[32vh]!">
           <WatershedLandscape decisions={decisions} state={state} stressId={stressId} className="h-full w-full" />
         </div>
         <div className="min-h-0">

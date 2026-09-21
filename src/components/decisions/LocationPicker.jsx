@@ -20,7 +20,7 @@ export default function LocationPicker({ ubicacion, onSelect }) {
     <div
       role="radiogroup"
       aria-label="Tramo donde ocurre la decisión"
-      className="grid grid-cols-3 gap-2 short:gap-1.5! sm:gap-3"
+      className="grid grid-cols-3 gap-2 short:gap-1.5! vertical:grid-cols-1! sm:gap-3"
     >
       {OPCIONES.map((op) => {
         const activa = ubicacion === op.id
@@ -31,7 +31,7 @@ export default function LocationPicker({ ubicacion, onSelect }) {
             role="radio"
             aria-checked={activa}
             onClick={() => onSelect(op.id)}
-            className={`flex flex-col items-start gap-2 rounded-2xl border-2 p-2.5 text-left transition-all duration-200 short:gap-1! short:p-1.5! hover:-translate-y-0.5 active:scale-[0.97] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-agua-600 sm:p-3 ${
+            className={`flex flex-col items-start gap-2 rounded-2xl border-2 p-2.5 text-left transition-all duration-200 short:gap-1! short:p-1.5! vertical:flex-row! vertical:items-center! hover:-translate-y-0.5 active:scale-[0.97] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-agua-600 sm:p-3 ${
               activa ? `${COLORES[op.color]} shadow-md` : 'border-tierra-200 bg-white hover:bg-tierra-50'
             }`}
           >
@@ -40,7 +40,9 @@ export default function LocationPicker({ ubicacion, onSelect }) {
             </span>
             <span className="min-w-0">
               <span className="block text-xs font-bold sm:text-base">{op.label}</span>
-              <span className="mt-0.5 hidden text-[11px] leading-tight text-slate-600 sm:block">{op.desc}</span>
+              <span className="mt-0.5 hidden text-[11px] leading-tight text-slate-600 vertical:block! sm:block">
+                {op.desc}
+              </span>
             </span>
           </button>
         )

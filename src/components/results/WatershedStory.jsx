@@ -18,7 +18,7 @@ export default function WatershedStory({ narrative, titulo = true }) {
       ) : null}
       <p className="shrink-0 text-sm text-slate-700 short:hidden!">{narrative.resumen}</p>
 
-      <div className="grid min-h-0 flex-1 grid-cols-2 gap-3 short:gap-1.5!">
+      <div className="grid min-h-0 flex-1 grid-cols-2 gap-3 short:gap-1.5! vertical:grid-cols-1!">
         <div className="min-h-0 overflow-y-auto rounded-xl bg-white/70 p-2.5 short:p-1.5!">
           <h3 className="flex items-center gap-1.5 text-sm font-bold text-bosque-800">
             <Icon name="hoja" className="h-4 w-4" /> Decisiones favorables

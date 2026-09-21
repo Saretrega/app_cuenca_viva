@@ -47,7 +47,15 @@ function renderPagina(page, sim, navigate) {
 export default function App() {
   const sim = useWatershedSimulator()
   const { aplicarEscenario } = sim
-  const { rotacionForzada, activarModoInmersivo, mostrarAvisoInicio, descartarAviso } = useMobileLandscapeMode()
+  const {
+    esMovil,
+    activo,
+    rotacionForzada,
+    modoVerticalNormal,
+    activarModoInmersivo,
+    mostrarAvisoInicio,
+    descartarAviso,
+  } = useMobileLandscapeMode()
   const [page, setPage] = useState('home')
   const wrapperRef = useRef(null)
   const navRef = useRef(null)
@@ -65,15 +73,9 @@ export default function App() {
     return () => observer.disconnect()
   }, [])
 
-  const navigate = useCallback(
-    (destino) => {
-      // Primer toque del usuario: único momento en que los navegadores permiten
-      // pedir pantalla completa / bloqueo de orientación (activarModoInmersivo no repite el intento).
-      activarModoInmersivo()
-      setPage(destino)
-    },
-    [activarModoInmersivo],
-  )
+  const navigate = useCallback((destino) => {
+    setPage(destino)
+  }, [])
 
   // Carga un escenario compartido por URL (#cuenca=...) y muestra el resumen.
   useEffect(() => {
@@ -90,7 +92,11 @@ export default function App() {
     <MotionConfig reducedMotion="user">
       <div
         ref={wrapperRef}
-        className={`relative flex h-dvh w-full flex-col overflow-hidden ${rotacionForzada ? 'cv-rotar-horizontal' : ''}`}
+        className={`relative flex w-full flex-col overflow-hidden ${
+          rotacionForzada
+            ? 'cv-rotar-horizontal'
+            : 'h-dvh portrait:h-auto! portrait:min-h-dvh! portrait:overflow-visible!'
+        } ${modoVerticalNormal ? 'cv-modo-vertical' : ''}`}
       >
         {mostrarAvisoInicio ? <AvisoAgregarInicio onDescartar={descartarAviso} /> : null}
         <a
@@ -103,7 +109,7 @@ export default function App() {
         <nav
           ref={navRef}
           aria-label="Navegación principal"
-          className="absolute bottom-[calc(0.5rem+env(safe-area-inset-bottom,0px))] left-1/2 z-40 flex -translate-x-1/2 items-center gap-0.5 rounded-full border border-tierra-200 bg-white/80 p-1 shadow-sm backdrop-blur sm:bottom-[calc(0.75rem+env(safe-area-inset-bottom,0px))]"
+          className="absolute bottom-[calc(0.5rem+env(safe-area-inset-bottom,0px))] left-1/2 z-40 flex -translate-x-1/2 items-center gap-0.5 rounded-full border border-tierra-200 bg-white/80 p-1 shadow-sm backdrop-blur portrait:fixed! sm:bottom-[calc(0.75rem+env(safe-area-inset-bottom,0px))]"
         >
           {NAV.map((n) => (
             <button
@@ -120,11 +126,24 @@ export default function App() {
               <span className="hidden md:inline">{n.label}</span>
             </button>
           ))}
+          {esMovil && !activo ? (
+            <button
+              type="button"
+              onClick={activarModoInmersivo}
+              aria-label="Ver en pantalla completa horizontal"
+              title="Ver en pantalla completa horizontal"
+              className="flex items-center gap-1.5 rounded-full border-l border-tierra-200 px-2.5 py-1.5 text-sm font-semibold text-slate-500 transition-all hover:-translate-y-0.5 hover:bg-tierra-100 active:scale-95 sm:px-3"
+            >
+              <Icon name="expandir" className="h-4 w-4" />
+            </button>
+          ) : null}
         </nav>
 
         <main
           id="contenido"
-          className="relative min-h-0 flex-1 overflow-hidden px-2 pt-2 pb-[calc(var(--nav-height)+1rem+env(safe-area-inset-bottom,0px))] sm:px-3 sm:pt-3 sm:pb-[calc(var(--nav-height)+1.25rem+env(safe-area-inset-bottom,0px))]"
+          className={`relative min-h-0 flex-1 overflow-hidden px-2 pt-2 pb-[calc(var(--nav-height)+1rem+env(safe-area-inset-bottom,0px))] sm:px-3 sm:pt-3 sm:pb-[calc(var(--nav-height)+1.25rem+env(safe-area-inset-bottom,0px))] ${
+            rotacionForzada ? '' : 'portrait:overflow-x-hidden! portrait:overflow-y-visible!'
+          }`}
         >
           <AnimatePresence mode="wait">
             <motion.div

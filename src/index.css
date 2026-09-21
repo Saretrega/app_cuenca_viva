@@ -4,6 +4,13 @@
    reduce densidad (padding/gap/tamaño de fuente) donde el alto es la restricción, no el ancho. */
 @custom-variant short (@media (max-height: 480px));
 
+/* "Vertical normal": portrait sin modo inmersivo activado (ver useMobileLandscapeMode).
+   Distinta de un simple `@media (orientation: portrait)` porque debe EXCLUIR el caso en que
+   la rotación CSS de respaldo está activa (ahí, aunque el dispositivo siga físicamente en
+   portrait, la app se ve y debe comportarse como horizontal de alto fijo, sin layout de página
+   que crece con el contenido). App.jsx marca el wrapper con .cv-modo-vertical solo cuando aplica. */
+@custom-variant vertical (.cv-modo-vertical &);
+
 :root {
   /* Alto real del <nav> inferior, medido por JS (ResizeObserver en App.jsx);
      este valor es solo el respaldo antes de la primera medición. */
@@ -215,6 +222,17 @@ body {
   background: linear-gradient(180deg, #eef7ff 0%, #f7fbf7 45%, #faf6f0 100%);
   color: #1f2937;
   font-family: var(--font-sans);
+}
+
+/* Vertical normal (sin modo inmersivo activado): la app deja de ser un "app-shell" de
+   alto fijo sin scroll y pasa a ser una página normal que crece con su contenido;
+   el <body> es quien controla el scroll real de la ventana (ver App.jsx: el wrapper
+   pasa a alto automático y el <nav> a position:fixed para seguir ligado al viewport). */
+@media (orientation: portrait) {
+  body {
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
 }
 
 /* El paisaje anima suavemente los cambios de color/opacidad del río. */

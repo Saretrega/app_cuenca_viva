@@ -60,9 +60,8 @@ vi.mock('./components/charts/LazyWatershedChart.jsx', () => ({ default: () => nu
 function decidir(alternativa) {
   fireEvent.click(screen.getByText(alternativa).closest('button'))
   fireEvent.click(screen.getByText('Cuenca Alta').closest('button'))
-  fireEvent.click(screen.getByText('Continuar'))
-  // La ilustración animada se salta tocando la pantalla.
-  fireEvent.click(screen.getByLabelText('Saltar la animación y continuar'))
+  fireEvent.click(screen.getByText('Continuar')) // decisión → efecto
+  fireEvent.click(screen.getByText('Continuar')) // efecto → siguiente decisión (o resultados)
 }
 
 describe('App · flujo completo del simulador', () => {

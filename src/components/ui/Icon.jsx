@@ -17,6 +17,7 @@ import {
   Leaf,
   Maximize,
   Mountain,
+  Pause,
   Pickaxe,
   Play,
   RotateCcw,
@@ -65,6 +66,7 @@ const LUCIDE = {
   fabrica: Factory,
   medir: Gauge,
   expandir: Maximize,
+  pausa: Pause,
 }
 
 // Íconos propios que Lucide no cubre.

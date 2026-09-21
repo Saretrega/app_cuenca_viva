@@ -1,12 +1,13 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { categories } from '../data/categories.js'
 import DecisionStep from '../components/decisions/DecisionStep.jsx'
 import DecisionProgress from '../components/decisions/DecisionProgress.jsx'
 import WatershedLandscape from '../components/watershed/WatershedLandscape.jsx'
 import Icon from '../components/ui/Icon.jsx'
+import useAutoAdvance from '../hooks/useAutoAdvance.js'
 
-const DURACION_EFECTO = 3400
+const DURACION_AUTOAVANCE = 30000
 
 /**
  * Flujo por fases: decisión (pantalla completa) → efecto animado sobre la cuenca
@@ -35,11 +36,11 @@ export default function SimulationPage({ sim, onNavigate }) {
     setFase('efecto')
   }
 
-  useEffect(() => {
-    if (fase !== 'efecto') return undefined
-    const t = setTimeout(avanzar, DURACION_EFECTO)
-    return () => clearTimeout(t)
-  }, [fase, avanzar])
+  const { pausado, ciclo, reiniciar, alternarPausa } = useAutoAdvance(
+    DURACION_AUTOAVANCE,
+    avanzar,
+    fase === 'efecto',
+  )
 
   const irAtras = () => {
     if (indice > 0) {
@@ -86,11 +87,9 @@ export default function SimulationPage({ sim, onNavigate }) {
             transition={{ duration: 0.5, ease: 'easeInOut' }}
             className="h-full"
           >
-            <button
-              type="button"
-              onClick={avanzar}
-              aria-label="Saltar la animación y continuar"
-              className="relative block h-full w-full cursor-pointer overflow-hidden rounded-2xl border border-tierra-200 bg-white/70"
+            <div
+              className="relative h-full w-full overflow-hidden rounded-2xl border border-tierra-200 bg-white/70"
+              onPointerDown={reiniciar}
             >
               <WatershedLandscape
                 decisions={decisions}
@@ -98,11 +97,46 @@ export default function SimulationPage({ sim, onNavigate }) {
                 revision={revision}
                 className="h-full w-full"
               />
-              <span className="absolute bottom-3 left-1/2 flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-white/85 px-3 py-1 text-xs font-medium text-slate-600 backdrop-blur">
-                <Icon name="flecha_der" className="h-3.5 w-3.5" />
-                Toca para continuar
-              </span>
-            </button>
+              <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 items-center gap-2">
+                <button
+                  type="button"
+                  onClick={alternarPausa}
+                  aria-label={pausado ? 'Reanudar avance automático' : 'Pausar avance automático'}
+                  title={pausado ? 'Reanudar avance automático' : 'Pausar avance automático'}
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/85 text-slate-600 shadow-sm backdrop-blur hover:bg-white"
+                >
+                  <Icon name={pausado ? 'jugar' : 'pausa'} className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={avanzar}
+                  className="flex items-center gap-1.5 rounded-full bg-white/85 py-1 pl-1 pr-3 text-xs font-medium text-slate-700 shadow-sm backdrop-blur hover:bg-white"
+                >
+                  <svg width="20" height="20" viewBox="0 0 20 20" className="shrink-0" aria-hidden="true">
+                    <circle cx="10" cy="10" r="8" fill="none" stroke="#e2d9c6" strokeWidth="2.4" />
+                    {pausado ? (
+                      <circle cx="10" cy="10" r="8" fill="none" stroke="#94a3b8" strokeWidth="2.4" strokeDasharray="1.6 3" />
+                    ) : (
+                      <motion.circle
+                        key={ciclo}
+                        cx="10"
+                        cy="10"
+                        r="8"
+                        fill="none"
+                        stroke="#0f68cd"
+                        strokeWidth="2.4"
+                        strokeLinecap="round"
+                        initial={{ pathLength: 0 }}
+                        animate={{ pathLength: 1 }}
+                        transition={{ duration: DURACION_AUTOAVANCE / 1000, ease: 'linear' }}
+                      />
+                    )}
+                  </svg>
+                  Continuar
+                  <Icon name="flecha_der" className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

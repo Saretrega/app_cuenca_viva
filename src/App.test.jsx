@@ -98,8 +98,6 @@ describe('App · flujo completo del simulador', () => {
     expect(await screen.findByText('Resumen de tu cuenca')).toBeTruthy()
     fireEvent.click(screen.getByLabelText('Ir a Historia de tu cuenca'))
     expect(screen.getByText('Decisiones favorables')).toBeTruthy()
-    fireEvent.click(screen.getByLabelText('Ir a Causa-efecto'))
-    expect(screen.getAllByText(/Efecto principal/).length).toBeGreaterThan(0)
 
     // Prueba de estrés
     fireEvent.click(screen.getByText('Probar estrés climático'))
@@ -107,8 +105,7 @@ describe('App · flujo completo del simulador', () => {
     fireEvent.click(screen.getByText('Sequía prolongada').closest('button'))
     expect(screen.getAllByText(/Antes vs\. después/).length).toBeGreaterThan(0)
 
-    // Reflexión final (acción final de la última diapositiva de estrés)
-    fireEvent.click(screen.getByLabelText('Ir a Detalle por tramo'))
+    // Reflexión final (acción final de la única diapositiva de estrés)
     fireEvent.click(screen.getByText('¿Para quién es el agua?'))
     expect(await screen.findAllByText('¿Para quién es el agua?')).toBeTruthy()
 

@@ -73,30 +73,36 @@ export default function SlideDeck({ slides, accionFinal = null, className = '', 
         aria-label="Navegación de diapositivas"
         className="mt-2 flex shrink-0 items-center justify-between gap-2"
       >
-        <Button variant="secundario" size="sm" onClick={anterior} disabled={indice === 0}>
-          <Icon name="flecha_izq" className="h-4 w-4" />
-          <span className="hidden sm:inline">Anterior</span>
-        </Button>
+        {total > 1 ? (
+          <Button variant="secundario" size="sm" onClick={anterior} disabled={indice === 0}>
+            <Icon name="flecha_izq" className="h-4 w-4" />
+            <span className="hidden sm:inline">Anterior</span>
+          </Button>
+        ) : null}
 
-        <div className="flex min-w-0 flex-col items-center gap-1">
-          <div className="flex flex-wrap items-center justify-center gap-1.5">
-            {slides.map((s, i) => (
-              <button
-                key={s.id}
-                type="button"
-                onClick={() => ir(i)}
-                aria-label={`Ir a ${s.titulo}`}
-                aria-current={i === indice ? 'true' : undefined}
-                className={`h-2.5 rounded-full transition-all duration-300 ${
-                  i === indice ? 'w-6 bg-agua-600' : 'w-2.5 bg-tierra-300 hover:bg-tierra-400'
-                }`}
-              />
-            ))}
+        {total > 1 ? (
+          <div className="flex min-w-0 flex-col items-center gap-1">
+            <div className="flex flex-wrap items-center justify-center gap-1.5">
+              {slides.map((s, i) => (
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() => ir(i)}
+                  aria-label={`Ir a ${s.titulo}`}
+                  aria-current={i === indice ? 'true' : undefined}
+                  className={`h-2.5 rounded-full transition-all duration-300 ${
+                    i === indice ? 'w-6 bg-agua-600' : 'w-2.5 bg-tierra-300 hover:bg-tierra-400'
+                  }`}
+                />
+              ))}
+            </div>
+            <p className="truncate text-[11px] text-slate-500">
+              {slide.titulo} · {indice + 1} de {total}
+            </p>
           </div>
-          <p className="truncate text-[11px] text-slate-500">
-            {slide.titulo} · {indice + 1} de {total}
-          </p>
-        </div>
+        ) : (
+          <p className="truncate text-[11px] text-slate-500">{slide.titulo}</p>
+        )}
 
         {indice === total - 1 && accionFinal ? (
           accionFinal

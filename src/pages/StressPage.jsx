@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import WatershedLandscape from '../components/watershed/WatershedLandscape.jsx'
-import StressComparison from '../components/stress/StressComparison.jsx'
 import LazyWatershedChart from '../components/charts/LazyWatershedChart.jsx'
 import SlideDeck from '../components/ui/SlideDeck.jsx'
 import Button from '../components/ui/Button.jsx'
@@ -84,15 +83,6 @@ export default function StressPage({ sim, onNavigate }) {
                   </a>
                 </p>
               ) : null}
-            </div>
-          ),
-        },
-        {
-          id: 'detalle',
-          titulo: 'Detalle por tramo',
-          contenido: (
-            <div className="flex h-full min-h-0 flex-col gap-2">
-              <StressComparison stressResult={stressResult} />
             </div>
           ),
         },

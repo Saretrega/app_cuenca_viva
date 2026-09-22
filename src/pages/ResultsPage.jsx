@@ -1,6 +1,5 @@
 import ResultsPanel from '../components/results/ResultsPanel.jsx'
 import WatershedStory from '../components/results/WatershedStory.jsx'
-import CauseEffectList from '../components/results/CauseEffectList.jsx'
 import WatershedLandscape from '../components/watershed/WatershedLandscape.jsx'
 import LazyWatershedChart from '../components/charts/LazyWatershedChart.jsx'
 import SlideDeck from '../components/ui/SlideDeck.jsx'
@@ -10,7 +9,7 @@ import Icon from '../components/ui/Icon.jsx'
 import { COLOR_TRAMO, INDICADOR_CORTO, INDICADORES, TRAMOS } from '../data/dimensions.js'
 
 /**
- * Página de resultados en formato diapositivas (estado, historia y causa-efecto).
+ * Página de resultados en formato diapositivas (cuenca/gráfico, estado por tramo e historia).
  */
 export default function ResultsPage({ sim, onNavigate }) {
   const { state, narrative, decisions, stressId } = sim
@@ -46,7 +45,6 @@ export default function ResultsPage({ sim, onNavigate }) {
     },
     { id: 'estado', titulo: 'Estado por tramo', contenido: <ResultsPanel state={state} titulo={null} /> },
     { id: 'historia', titulo: 'Historia de tu cuenca', contenido: <WatershedStory narrative={narrative} titulo={false} /> },
-    { id: 'causa', titulo: 'Causa-efecto', contenido: <CauseEffectList detalles={state.detalles} titulo={null} /> },
   ]
 
   return (
